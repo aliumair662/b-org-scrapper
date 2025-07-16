@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Business Table</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  </head>
+
+  <body>
+    <header>
+      <div class="utility-bar">
+        <div class="wrapper">
+          <ul>
+            <li><a href="">BBB Accreditation</a></li>
+            <li>
+              <a href="">Business Login</a>
+            </li>
+            <li><a href="">Consumer Login</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="container-fluid">
+        <nav class="navbar p-0">
+          <a class="logo text-decoration-none" href="/">
+            <div class="d-flex gap-3 align-items-center">
+              <div class="logo-img">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="currentColor"
+                  viewBox="0.5 0.5 266.4 368.6"
+                  role="img"
+                  aria-hidden="true"
+                  height="4em"
+                  width="2.875em"
+                >
+                  <path
+                    d="M185.1 231.5H44l-5.2 16.9h37.7l7.2 23.2h61.9l7.1-23.2h37.6l-5-17zM67 136.6a33.4 33.4 0 0 0 7.4 46.7l33.8 24.5a8.4 8.4 0 0 1 2 11.7l5 3.7 17.9-24.7a33.2 33.2 0 0 0 6.3-19.5 33.8 33.8 0 0 0-.4-5.4 33.2 33.2 0 0 0-13.4-21.7l-33.8-24.6a8.3 8.3 0 0 1-3.4-5.4 8.8 8.8 0 0 1 0-1.4 8.2 8.2 0 0 1 1.5-4.8l-5-3.7zM87.3 38A48 48 0 0 0 78 66.2a49.2 49.2 0 0 0 .6 7.7A48.1 48.1 0 0 0 98 105.5l42.5 30.8a25.8 25.8 0 0 1 10.4 16.9 26.4 26.4 0 0 1 .3 4.1 25.8 25.8 0 0 1-5 15.2l4.1 3 33.5-46.3A48.4 48.4 0 0 0 173 61.6l-51.3-37.3a15 15 0 0 1-3.3-20.9l-4-2.9zM.5 285.8h38.7c9.5 0 17 2.6 21.8 7.3a19.1 19.1 0 0 1 5.7 14.2v.2c0 9.4-5 14.7-11 18 9.6 3.7 15.6 9.3 15.6 20.5v.2c0 15.3-12.4 22.9-31.2 22.9H.5zm34.8 33.6c8 0 13.2-2.6 13.2-8.8v-.2c0-5.5-4.3-8.6-12-8.6H18.4v17.6zm4.9 33.6c8 0 13-2.8 13-9v-.2c0-5.6-4.2-9-13.6-9H18.4V353zm39.1-67.3H118c9.6 0 17 2.7 21.8 7.4a19.1 19.1 0 0 1 5.7 14.2v.2c0 9.4-5 14.7-11 18 9.7 3.7 15.6 9.3 15.6 20.5v.2c0 15.3-12.4 22.9-31.2 22.9H79.3zm34.8 33.8c8 0 13.2-2.7 13.2-8.9v-.2c0-5.5-4.3-8.6-12-8.6H97.2v17.6zM119 353c8 0 13-2.8 13-9v-.2c0-5.6-4.2-9-13.6-9H97.2V353zm39.1-67.3H197c9.5 0 17 2.7 21.7 7.4a19.1 19.1 0 0 1 5.8 14.2v.2c0 9.4-5 14.7-11 18 9.6 3.7 15.6 9.3 15.6 20.5v.2c0 15.3-12.4 22.9-31.2 22.9h-39.6zm34.8 33.8c8.1 0 13.2-2.7 13.2-8.9v-.2c0-5.5-4.2-8.6-12-8.6h-18v17.6zm4.9 33.5c8.1 0 13-2.8 13-9v-.2c0-5.6-4.2-9-13.6-9H176V353zm35-1.3v-.1a17 17 0 0 1 34-.1 17 17 0 0 1-34 .2zm32-.1v-.1a15 15 0 1 0-30 0v.2a15 15 0 1 0 30-.1zm-22-9.5h8a7.6 7.6 0 0 1 5.6 2 5.4 5.4 0 0 1 1.6 4 5.6 5.6 0 0 1-4 5.6l4.5 6.4h-4.7l-3.8-5.8h-3.2v5.8h-4zm8 8.8c2 0 3.2-1 3.2-2.6 0-1.8-1.3-2.7-3.2-2.7h-4v5.3z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="logo-text">
+                Better Business Bureau<sup>®</sup>
+                <span class="visually-hidden">Homepage</span>
+              </div>
+            </div>
+          </a>
+          <div class="header-action">
+            <div class="shortcuts">
+              <a class="d-flex align-items-center gap-2" href="">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 512 512"
+                  aria-hidden="true"
+                  height="20"
+                  width="20"
+                  fill="#005f86"
+                >
+                  <path
+                    d="M184 48h144c4.4 0 8 3.6 8 8v40H176V56c0-4.4 3.6-8 8-8zm-56 8v40H64c-35.3 0-64 28.7-64 64v96h512v-96c0-35.3-28.7-64-64-64h-64V56c0-30.9-25.1-56-56-56H184c-30.9 0-56 25.1-56 56zm384 232H320v32c0 17.7-14.3 32-32 32h-64c-17.7 0-32-14.3-32-32v-32H0v128c0 35.3 28.7 64 64 64h384c35.3 0 64-28.7 64-64V288z"
+                  ></path>
+                </svg>
+                Resources for Businesses</a
+              >
+              <a class="d-flex align-items-center gap-2" href="">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 384 512"
+                  aria-hidden="true"
+                  height="20"
+                  width="20"
+                  fill="#005f86"
+                >
+                  <path
+                    d="M215.7 499.2C267 435 384 279.4 384 192 384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2 12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"
+                  ></path>
+                </svg>
+                My BBB</a
+              >
+            </div>
+            <div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="34"
+                width="25"
+                viewBox="0 0 448 512"
+              >
+                <path
+                  d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z"
+                  fill="#002f6c"
+                />
+              </svg>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="form-wrapper">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between">
+          <form action="">
+            <div class="d-flex flex-wrap gap-4">
+              <div class="dropdown-container">
+                <div class="find-input-wrapper" id="searchWrapper">
+                  <span>Find</span>
+                  <div class="input-with-clear d-flex flex-grow-1">
+                    <input
+                      type="text"
+                      id="searchInput"
+                      placeholder="businesses, category"
+                      oninput="filterDropdown(); toggleClearIcon(this, 'searchClearIcon')"
+                      autocomplete="off"
+                    />
+                    <span
+                      class="clear-icon d-none"
+                      id="searchClearIcon"
+                      onclick="clearInput('searchInput', 'searchClearIcon')"
+                    >
+                      <i class="bi bi-x-circle"></i>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="dropdown-menu" id="dropdownMenu">
+                  <div class="dropdown-header">Popular Categories</div>
+                  <div class="dropdown-body" id="dropdownItems">
+                    <div class="dropdown-item" data-value="Roofing Contractors">
+                      <i class="bi bi-house"></i> Roofing Contractors
+                    </div>
+                    <div
+                      class="dropdown-item"
+                      data-value="Real Estate Consultant"
+                    >
+                      <i class="bi bi-building"></i> Real Estate Consultant
+                    </div>
+                    <div class="dropdown-item" data-value="General Contractor">
+                      <i class="bi bi-briefcase"></i> General Contractor
+                    </div>
+                    <div class="dropdown-item" data-value="Used Car Dealers">
+                      <i class="bi bi-car-front-fill"></i> Used Car Dealers
+                    </div>
+                    <div class="dropdown-item" data-value="Heating Contractors">
+                      <i class="bi bi-thermometer-half"></i> Heating Contractors
+                    </div>
+                    <div
+                      class="dropdown-item"
+                      data-value="Air Conditioning Contractors"
+                    >
+                      <i class="bi bi-wind"></i> Air Conditioning Contractors
+                    </div>
+                    <div class="dropdown-item" data-value="Auto Repairs">
+                      <i class="bi bi-tools"></i> Auto Repairs
+                    </div>
+                    <div class="dropdown-item" data-value="Financial Services">
+                      <i class="bi bi-cash-stack"></i> Financial Services
+                    </div>
+                    <div class="dropdown-item" data-value="Tree Services">
+                      <i class="bi bi-tree-fill"></i> Tree Services
+                    </div>
+                  </div>
+                  <div class="no-results d-none" id="noResults">
+                    No results found
+                  </div>
+                </div>
+              </div>
+
+              <div class="dropdown-container d-flex">
+                <div
+                  class="find-input-wrapper flex-grow-1"
+                  id="nearDropdownWrapper"
+                >
+                  <span>Near</span>
+                  <div class="input-with-clear d-flex flex-grow-1">
+                    <input
+                      type="text"
+                      id="nearInput"
+                      placeholder="city,state or zip"
+                      oninput="filterNearDropdown(); toggleClearIcon(this, 'nearClearIcon')"
+                      autocomplete="off"
+                    />
+                    <span
+                      class="clear-icon d-none"
+                      id="nearClearIcon"
+                      onclick="clearInput('nearInput', 'nearClearIcon')"
+                    >
+                      <i class="bi bi-x-circle"></i>
+                    </span>
+                  </div>
+                </div>
+                <div
+                  class="dropdown-menu rounded-0 border border-light"
+                  id="nearDropdownMenu"
+                >
+                  <div class="dropdown-body" id="nearDropdownItems">
+                    <div class="dropdown-item" data-value="Vancouver">
+                      <i class="bi bi-geo-alt-fill"></i> Vancouver
+                    </div>
+                    <div class="dropdown-item" data-value="Toronto">
+                      <i class="bi bi-geo-alt-fill"></i> Toronto
+                    </div>
+                    <div class="dropdown-item" data-value="New York">
+                      <i class="bi bi-geo-alt-fill"></i> New York
+                    </div>
+                    <div class="dropdown-item" data-value="Los Angeles">
+                      <i class="bi bi-geo-alt-fill"></i> Los Angeles
+                    </div>
+                    <div class="dropdown-item" data-value="Chicago">
+                      <i class="bi bi-geo-alt-fill"></i> Chicago
+                    </div>
+                  </div>
+                  <div class="no-results d-none" id="nearNoResults">
+                    No results found
+                  </div>
+                </div>
+
+                <div class="custom-select" onclick="toggleDropdown()">
+                  <img class="selected-flag" src="" />
+                  <span id="selectedText"></span
+                  ><i class="bi bi-chevron-down"></i>
+
+                  <ul
+                    class="options list-unstyled"
+                    id="options"
+                    style="display: none"
+                  >
+                    <li onclick="selectCountry('US', event)">
+                      <img
+                        class="country-img"
+                        src="https://m.bbb.org/terminuscontent/dist/img/header/flag-us-100__100w.png"
+                        alt=""
+                      />
+
+                      United States
+                    </li>
+                    <li onclick="selectCountry('CA',event )">
+                      <img
+                        class="country-img"
+                        src="https://m.bbb.org/terminuscontent/dist/img/header/flag-ca-100__100w.png"
+                        alt=""
+                      />
+                      Canada
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <button class="btn custom-btn">Search</button>
+            </div>
+          </form>
+          <button class="btn custom-btn export" id="exportBtn">
+            Export to Excel <i class="bi bi-file-earmark-arrow-up"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="container-fluid table-wrapper">
+      <div class="table-responsive">
+        <table class="table custom-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" id="selectAll" /></th>
+              <th>Business Name</th>
+              <th>Main Number</th>
+              <th>Cell Phone</th>
+              <th>Owner Name</th>
+              <th>Manager Name</th>
+              <th>Email Address</th>
+              <th>Country</th>
+              <th>State Province</th>
+              <th>City</th>
+              <th>Address</th>
+              <th>Postal Code</th>
+            </tr>
+          </thead>
+          <tbody id="businessTableBody">
+            <tr>
+              <td colspan="12">Loading data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-end" id="pagination"></ul>
+      </nav>
+    </div>
+  </body>
+
+  <script>
+    const recordsPerPage = 10;
+    let currentPage = 1;
+    let businesses = []; // Will hold all your data
+
+    function parseLocation(raw = "") {
+      raw = raw.trim();
+      if (!raw) return { street: "", city: "", state: "", zip: "" };
+      const parts = raw.split(",").map((p) => p.trim());
+
+      let street = "",
+        city = "",
+        state = "",
+        zip = "";
+
+      if (parts.length >= 3) {
+        const stateZip = parts[parts.length - 1].split(/\s+/);
+        state = stateZip[0] || "";
+        zip = stateZip.slice(1).join(" ") || "";
+        city = parts[parts.length - 2] || "";
+        street = parts.slice(0, parts.length - 2).join(", ");
+      } else if (parts.length === 2) {
+        city = parts[0];
+        const stateZip = parts[1].split(/\s+/);
+        state = stateZip[0] || "";
+        zip = stateZip.slice(1).join(" ") || "";
+      } else if (parts.length === 1) {
+        const tokens = parts[0].split(/\s+/);
+        if (tokens.length >= 3) {
+          zip = tokens.pop();
+          state = tokens.pop();
+          city = tokens.join(" ");
+        } else {
+          city = parts[0];
+        }
+      }
+
+      return { street, city, state, zip };
+    }
+
+    function renderTablePage(page = 1) {
+      const tbody = document.getElementById("businessTableBody");
+      tbody.innerHTML = "";
+
+      const start = (page - 1) * recordsPerPage;
+      const end = start + recordsPerPage;
+      const pageData = businesses.slice(start, end);
+
+      if (pageData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="12">No data found.</td></tr>`;
+        return;
+      }
+
+      pageData.forEach((item) => {
+        const locationString = item.location;
+        const { street, city, state, zip } = parseLocation(locationString);
+
+
+
+    const extras=  [item.phone2, item.phone3,item.phone4, item.phone5,item.phone6].filter(Boolean).join(", ")
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+      <td><input type="checkbox" class="rowCheckbox" /></td>
+      <td>${item.name || ""}</td>
+      <td>${item.phone1 || ""}</td>
+      <td style="overflow: visible;
+    white-space: normal;">${extras}</td>
+      <td>${item["Owner"] || item["Business Management"] || ""}</td>
+      <td>${item["Manager"] || item["Principal Contacts"] || ""}</td>
+      <td>${item.email || ""}</td>
+      <td>${item.country || "USA"}</td>
+      <td>${state}</td>
+      <td>${city}</td>
+      <td>${item.location}</td>
+      <td>${zip}</td>
+    `;
+        tbody.appendChild(tr);
+      });
+
+      renderPagination();
+      setupSelectAllCheckbox();
+    }
+
+    function renderPagination() {
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+
+      const totalPages = Math.ceil(businesses.length / recordsPerPage);
+
+      const prevLi = document.createElement("li");
+      prevLi.className = "page-item" + (currentPage === 1 ? " disabled" : "");
+      prevLi.innerHTML = `<a class="page-link" href="#" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 512 512"><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160zm352-160l-160 160c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L301.3 256 438.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0z" fill="#0e72ab"/></svg></a>`;
+      prevLi.onclick = (e) => {
+        e.preventDefault();
+        if (currentPage > 1) {
+          currentPage--;
+          renderTablePage(currentPage);
+        }
+      };
+      pagination.appendChild(prevLi);
+
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, currentPage + 2);
+
+      if (currentPage <= 3) {
+        endPage = Math.min(5, totalPages);
+      }
+      if (currentPage > totalPages - 3) {
+        startPage = Math.max(1, totalPages - 4);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        const li = document.createElement("li");
+        li.className = "page-item" + (i === currentPage ? " active" : "");
+        li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+        li.onclick = (e) => {
+          e.preventDefault();
+          currentPage = i;
+          renderTablePage(currentPage);
+        };
+        pagination.appendChild(li);
+      }
+      const nextLi = document.createElement("li");
+      nextLi.className =
+        "page-item" + (currentPage === totalPages ? " disabled" : "");
+      nextLi.innerHTML = `<a class="page-link" href="#"><svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 512 512"><path d="M470.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 256 265.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160zm-352 160l160-160c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L210.7 256 73.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0z" fill="#0e72ab"/></svg></a>`;
+      nextLi.onclick = (e) => {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTablePage(currentPage);
+        }
+      };
+      pagination.appendChild(nextLi);
+    }
+
+    function setupSelectAllCheckbox() {
+      const selectAll = document.getElementById("selectAll");
+      const checkboxes = document.querySelectorAll(".rowCheckbox");
+
+      selectAll.checked = false;
+
+      selectAll.addEventListener("change", function () {
+        checkboxes.forEach((cb) => (cb.checked = selectAll.checked));
+      });
+
+      checkboxes.forEach((cb) => {
+        cb.addEventListener("change", () => {
+          if (!cb.checked) {
+            selectAll.checked = false;
+          } else if ([...checkboxes].every((c) => c.checked)) {
+            selectAll.checked = true;
+          }
+        });
+      });
+    }
+
+    async function loadBusinesses() {
+      try {
+        const res = await fetch("http://localhost:3000/api/businesses");
+        businesses = await res.json();
+
+        if (!Array.isArray(businesses) || businesses.length === 0) {
+          document.getElementById(
+            "businessTableBody"
+          ).innerHTML = `<tr><td colspan="12">No data found.</td></tr>`;
+          return;
+        }
+
+        currentPage = 1;
+        renderTablePage(currentPage);
+      } catch (err) {
+        document.getElementById(
+          "businessTableBody"
+        ).innerHTML = `<tr><td colspan="12">Error loading data</td></tr>`;
+        console.error("Failed to load data:", err);
+      }
+    }
+
+    window.onload = loadBusinesses;
+  </script>
+  <script>
+    document.getElementById("exportBtn").addEventListener("click", function () {
+      const headers = [
+        "Business Name",
+        "Main Number",
+        "Cell Phone",
+        "Owner Name",
+        "Manager Name",
+        "Email Address",
+        "Country",
+        "State Province",
+        "City",
+        "Address",
+        "Postal Code",
+      ];
+
+      const selectAll = document.getElementById("selectAll");
+      const checkboxes = document.querySelectorAll(".rowCheckbox");
+      const anyChecked = [...checkboxes].some((cb) => cb.checked);
+
+      let exportData = [];
+
+      if (anyChecked || selectAll.checked) {
+        // Export only checked rows
+        document.querySelectorAll("#businessTableBody tr").forEach((row) => {
+          const checkbox = row.querySelector(".rowCheckbox");
+          if (checkbox && checkbox.checked) {
+            const cells = row.querySelectorAll("td");
+            if (cells.length === 12) {
+              const rowData = [];
+              for (let i = 1; i < cells.length; i++) {
+                rowData.push(cells[i].innerText.trim());
+              }
+              exportData.push(rowData);
+            }
+          }
+        });
+
+        // If "Select All" was checked, export everything from the source array
+        if (selectAll.checked) {
+          exportData = businesses.map((item) => {
+            const { street, city, state, zip } = parseLocation(
+              item.location || ""
+            );
+            return [
+              item.name || "",
+              item.phone || "",
+              item.phone || "",
+              item["Owner"] || item["Business Management"] || "",
+              item["Manager"] || item["Principal Contacts"] || "",
+              item.email || "",
+              item.country || "USA",
+              state,
+              city,
+              item.location || "",
+              zip,
+            ];
+          });
+        }
+      } else {
+        // No checkboxes checked — export all records from businesses array
+        exportData = businesses.map((item) => {
+          const { street, city, state, zip } = parseLocation(
+            item.location || ""
+          );
+          return [
+            item.name || "",
+            item.phone || "",
+            item.phone || "",
+            item["Owner"] || item["Business Management"] || "",
+            item["Manager"] || item["Principal Contacts"] || "",
+            item.email || "",
+            item.country || "USA",
+            state,
+            city,
+            item.location || "",
+            zip,
+          ];
+        });
+      }
+
+      if (exportData.length === 0) {
+        alert("No data to export.");
+        return;
+      }
+
+      const worksheet = XLSX.utils.aoa_to_sheet([headers, ...exportData]);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Businesses");
+      XLSX.writeFile(workbook, "businesses_export.xlsx");
+    });
+  </script>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const dropdown = document.getElementById("dropdownMenu");
+    const categoryItems = document.querySelectorAll(
+      "#dropdownItems .dropdown-item"
+    );
+    const noResults = document.getElementById("noResults");
+    const countryDropdown = document.getElementById("countrySelect");
+    const countryImages = document.querySelectorAll(".country-img");
+
+    const nearInput = document.getElementById("nearInput");
+    const nearDropdown = document.getElementById("nearDropdownMenu");
+    const nearItems = document.querySelectorAll(
+      "#nearDropdownItems .dropdown-item"
+    );
+    const nearNoResults = document.getElementById("nearNoResults");
+
+    searchInput.addEventListener("focus", () => {
+      dropdown.classList.add("active");
+      filterDropdown();
+    });
+    function filterDropdown() {
+      const value = searchInput.value.toLowerCase();
+      let visible = 0;
+
+      categoryItems.forEach((item) => {
+        if (item.textContent.toLowerCase().includes(value)) {
+          item.style.display = "flex";
+          visible++;
+        } else {
+          item.style.display = "none";
+        }
+      });
+
+      noResults.classList.toggle("d-none", visible !== 0);
+    }
+    categoryItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        searchInput.value = item.getAttribute("data-value");
+        dropdown.classList.remove("active");
+        toggleClearIcon(searchInput, "searchClearIcon");
+      });
+    });
+    document.addEventListener("click", (e) => {
+      const wrapper = document.getElementById("searchWrapper");
+      if (!wrapper.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.remove("active");
+      }
+    });
+
+    function toggleDropdown() {
+      const options = document.getElementById("options");
+      options.style.display =
+        options.style.display === "none" ? "block" : "none";
+    }
+
+    function selectCountry(code, event) {
+      document.getElementById("selectedText").innerText = code; // Shows "US" or "CA"
+      document.querySelector(".selected-flag").src =
+        event.target.firstElementChild.src;
+    }
+
+    /*  Near Input    */
+    nearInput.addEventListener("focus", () => {
+      nearDropdown.classList.add("active");
+      filterNearDropdown();
+    });
+
+    function filterNearDropdown() {
+      const value = nearInput.value.toLowerCase();
+      let visible = 0;
+
+      nearItems.forEach((item) => {
+        if (item.textContent.toLowerCase().includes(value)) {
+          item.style.display = "flex";
+          visible++;
+        } else {
+          item.style.display = "none";
+        }
+      });
+
+      nearNoResults.classList.toggle("d-none", visible !== 0);
+    }
+
+    nearItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        nearInput.value = item.getAttribute("data-value");
+        nearDropdown.classList.remove("active");
+        toggleClearIcon(nearInput, "nearClearIcon");
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      const wrapper = nearInput.parentElement;
+      if (!wrapper.contains(e.target) && !nearDropdown.contains(e.target)) {
+        nearDropdown.classList.remove("active");
+      }
+    });
+    function toggleClearIcon(inputElem, iconId) {
+      const icon = document.getElementById(iconId);
+      if (inputElem.value.trim() !== "") {
+        icon.classList.remove("d-none");
+      } else {
+        icon.classList.add("d-none");
+      }
+    }
+
+    function clearInput(inputId, iconId) {
+      document.getElementById(inputId).value = "";
+      document.getElementById(iconId).classList.add("d-none");
+
+      // Optionally re-trigger filtering
+      if (inputId === "searchInput") {
+        filterDropdown();
+      } else if (inputId === "nearInput") {
+        filterNearDropdown();
+      }
+    }
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.querySelector("form");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const findText = document.getElementById("searchInput").value.trim();
+        const nearText = document.getElementById("nearInput").value.trim();
+        const selectedCountryText = document
+          .getElementById("selectedText")
+          .textContent.trim();
+
+        let countryCode = "USA"; // default
+
+        if (selectedCountryText === "CA") {
+          countryCode = "CAN";
+        } else if (selectedCountryText === "United States") {
+          countryCode = "USA";
+        }
+
+        const findParam = encodeURIComponent(findText);
+        const nearParam = encodeURIComponent(nearText);
+        const countryParam = encodeURIComponent(countryCode);
+
+        const url = `https://www.bbb.org/search?find_text=${findParam}&find_loc=${nearParam}&find_country=${countryParam}`;
+
+        fetch("http://localhost:3000/scrape", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            // Handle scraped data
+          })
+          .catch((err) => {
+            // Handle error
+          });
+      });
+    });
+  </script>
+</html>
