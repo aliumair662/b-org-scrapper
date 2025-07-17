@@ -1,22 +1,23 @@
-/* index.js ─ start with:  node index.js  */
+const puppeteer = require("puppeteer");
+const fs = require("fs/promises");
 const express = require("express");
 const cors = require("cors");
-const fs = require("fs/promises");
-const puppeteer = require("puppeteer");
 
+
+const app = express();
+app.use(cors());
+app.use(express.json());
 
 process.on('unhandledRejection', (reason, p) => {
   console.error('[unhandledRejection]', reason);
 });
 process.on('uncaughtException', err => {
   console.error('[uncaughtException]', err);
-  process.exit(1);                // optional but makes crashes obvious
+  process.exit(1);   
 });
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+
 
 const { insertData, testConnection, getAllData } = require("./db");
 /* ‑‑‑‑‑‑‑‑‑‑‑‑  YOUR CATEGORY LIST  ‑‑‑‑‑‑‑‑‑‑‑‑ */
@@ -24,14 +25,14 @@ const { insertData, testConnection, getAllData } = require("./db");
 
 const CATEGORIES = [
   "Roofing Contractors",
-  // "Real Estate Consultant",
-  // "General Contractor",
-  // "Used Car Dealers",
-  // "Heating Contractors",
-  // "Air Conditioning Contractors",
-  // "Auto Repairs",
-  // "Financial Services",
-  // "Tree Services",
+  "Real Estate Consultant",
+  "General Contractor",
+  "Used Car Dealers",
+  "Heating Contractors",
+  "Air Conditioning Contractors",
+  "Auto Repairs",
+  "Financial Services",
+  "Tree Services",
 ];
 const COUNTRIES = ["USA", "CAN"];
 const FILE_FOR = (c) => `${c}.json`;
@@ -120,13 +121,12 @@ async function scrapeCategory(listPage, cat, country, detailPage) {
 
   while (url) {
     const rows = await scrapeOnePage(listPage, url);
-
     // After scraping one search-result page:
     for (const row of rows) {
-      if (!row.link) continue; // safety
+      if (!row.link) continue; 
       const extra = await scrapeBusinessDetails(detailPage, row.link);
-      Object.assign(row, extra); // merge detail fields into card
-      await delay(800); // polite pause between requests
+      Object.assign(row, extra); 
+      await delay(800);
     }
 
     all.push(...rows);
@@ -177,7 +177,7 @@ async function scrapeBusinessDetails(detailPage, url) {
 
     const websiteLink =
       document.querySelector(".bpr-header-contact a[href^='http']")?.href ||
-      $("a[data-js='business-website']")?.href || // fallback
+      $("a[data-js='business-website']")?.href || 
       "";
 
     // Extract address and email on the detail page
@@ -234,10 +234,10 @@ async function scrapeBusinessDetails(detailPage, url) {
     // Return all data together, include email from website if found
     return {
       fullAddress,
-      email: websiteEmail, // If email from the page exists, use it, otherwise fallback to websiteEmail
+      email: websiteEmail,
       website: websiteLink,
       websiteEmail,
-      ...phoneFields,   // Include email found from website
+      ...phoneFields,
       ...ownerInfo,
     };
   });
@@ -248,7 +248,7 @@ async function scrapeBusinessDetails(detailPage, url) {
 async function runBatchScrape() {
   console.log('[scrape] starting…');
   const browser = await puppeteer.launch({
-    headless: "new",                     // modern headless mode
+    headless: "new",
     defaultViewport: null,
     args: [
       "--no-sandbox",
@@ -257,7 +257,7 @@ async function runBatchScrape() {
     ],
   }).catch(err => {
         console.error('[scrape] puppeteer launch failed:', err);
-        throw err;                              // bubble up
+        throw err;
       });
       console.log('[scrape] browser launched');
   const listPage = await browser.newPage();
@@ -270,13 +270,14 @@ async function runBatchScrape() {
   );
   for (const country of COUNTRIES) {
         console.log(`[scrape] country ${country}`);
-    let regionRows = [];
+    // let regionRows = [];
 
     for (const cat of CATEGORIES) {
         console.log(`  • category “${cat}”`);
       try {
-        const rows = await scrapeCategory(listPage, cat, country, detailPage);
-        regionRows.push(...rows);
+        // const rows = await scrapeCategory(listPage, cat, country, detailPage);
+        await scrapeCategory(listPage, cat, country, detailPage);
+        // regionRows.push(...rows);
       } catch (e) {
         // console.error(` ${cat} failed (${country}):`, e.message);
         // Error is caught silently
@@ -284,40 +285,20 @@ async function runBatchScrape() {
       await delay(1500); // 1.5 s courtesy pause
     }
     console.log(`  → inserting ${regionRows.length} rows`);
-    // await fs.writeFile(FILE_FOR(country), JSON.stringify(regionRows, null, 2));
-    // await insertData(regionRows); // 👈 Save to MongoDB
+    await fs.writeFile(FILE_FOR(country), JSON.stringify(regionRows, null, 2));
+    await insertData(regionRows); // 👈 Save to MongoDB
     console.log(`  ✓ done with ${country}`);
   }
   await browser.close();
   console.log('[scrape] finished');
 }
 
-app.post("/batch-scrape", async (_, res) => {
-  res.json({ ok: true, msg: "Started – watch your server log." });
-  await runBatchScrape();
-});
 
-app.get("/api/businesses", async (req, res) => {
-  try {
-    const data = await getAllData();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch businesses" });
-  }
-});
 
-/* keep your old /scrape if you still want manual use */
-app.post("/scrape", async (req, res) => {
-  res
-    .status(410)
-    .json({ error: "Manual scrape disabled – use /batch-scrape instead." });
-});
-
-/* start server */
-app.listen(3000, () => {
-  // Auto trigger scraping when server boots up
-  runBatchScrape().catch((err) => {
-    // Error is caught silently here, nothing logged or handled
-    console.error('[scrape] top‑level error:', err);
+  /* start server */
+  app.listen(3001, () => {
+    console.log("scrapper is running");
+    runBatchScrape().catch((err) => {
+      console.error('[scrape] top‑level error:', err);
+    });
   });
-});

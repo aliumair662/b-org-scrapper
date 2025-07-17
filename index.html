@@ -171,6 +171,9 @@
                     No results found
                   </div>
                 </div>
+                <div id="findError" class="text-danger small d-none">
+                  Please select the category
+                </div>
               </div>
 
               <div class="dropdown-container d-flex">
@@ -196,27 +199,12 @@
                     </span>
                   </div>
                 </div>
+
                 <div
                   class="dropdown-menu rounded-0 border border-light"
                   id="nearDropdownMenu"
                 >
-                  <div class="dropdown-body" id="nearDropdownItems">
-                    <div class="dropdown-item" data-value="Vancouver">
-                      <i class="bi bi-geo-alt-fill"></i> Vancouver
-                    </div>
-                    <div class="dropdown-item" data-value="Toronto">
-                      <i class="bi bi-geo-alt-fill"></i> Toronto
-                    </div>
-                    <div class="dropdown-item" data-value="New York">
-                      <i class="bi bi-geo-alt-fill"></i> New York
-                    </div>
-                    <div class="dropdown-item" data-value="Los Angeles">
-                      <i class="bi bi-geo-alt-fill"></i> Los Angeles
-                    </div>
-                    <div class="dropdown-item" data-value="Chicago">
-                      <i class="bi bi-geo-alt-fill"></i> Chicago
-                    </div>
-                  </div>
+                  <div class="dropdown-body" id="nearDropdownItems"></div>
                   <div class="no-results d-none" id="nearNoResults">
                     No results found
                   </div>
@@ -226,7 +214,7 @@
                   <img class="selected-flag" src="" />
                   <span id="selectedText"></span
                   ><i class="bi bi-chevron-down"></i>
-
+  
                   <ul
                     class="options list-unstyled"
                     id="options"
@@ -238,7 +226,7 @@
                         src="https://m.bbb.org/terminuscontent/dist/img/header/flag-us-100__100w.png"
                         alt=""
                       />
-
+  
                       United States
                     </li>
                     <li onclick="selectCountry('CA',event )">
@@ -252,7 +240,7 @@
                   </ul>
                 </div>
               </div>
-
+            
               <button class="btn custom-btn">Search</button>
             </div>
           </form>
@@ -297,7 +285,7 @@
   <script>
     const recordsPerPage = 10;
     let currentPage = 1;
-    let businesses = []; // Will hold all your data
+    let businesses = [];
 
     function parseLocation(raw = "") {
       raw = raw.trim();
@@ -351,9 +339,15 @@
         const locationString = item.location;
         const { street, city, state, zip } = parseLocation(locationString);
 
-
-
-    const extras=  [item.phone2, item.phone3,item.phone4, item.phone5,item.phone6].filter(Boolean).join(", ")
+        const extras = [
+          item.phone2,
+          item.phone3,
+          item.phone4,
+          item.phone5,
+          item.phone6,
+        ]
+          .filter(Boolean)
+          .join(", ");
         const tr = document.createElement("tr");
         tr.innerHTML = `
       <td><input type="checkbox" class="rowCheckbox" /></td>
@@ -450,11 +444,12 @@
         });
       });
     }
-
+    let originalBusinesses = [];
     async function loadBusinesses() {
       try {
         const res = await fetch("http://localhost:3000/api/businesses");
         businesses = await res.json();
+        originalBusinesses = [...businesses];
 
         if (!Array.isArray(businesses) || businesses.length === 0) {
           document.getElementById(
@@ -498,7 +493,6 @@
       let exportData = [];
 
       if (anyChecked || selectAll.checked) {
-        // Export only checked rows
         document.querySelectorAll("#businessTableBody tr").forEach((row) => {
           const checkbox = row.querySelector(".rowCheckbox");
           if (checkbox && checkbox.checked) {
@@ -512,38 +506,17 @@
             }
           }
         });
-
-        // If "Select All" was checked, export everything from the source array
-        if (selectAll.checked) {
-          exportData = businesses.map((item) => {
-            const { street, city, state, zip } = parseLocation(
-              item.location || ""
-            );
-            return [
-              item.name || "",
-              item.phone || "",
-              item.phone || "",
-              item["Owner"] || item["Business Management"] || "",
-              item["Manager"] || item["Principal Contacts"] || "",
-              item.email || "",
-              item.country || "USA",
-              state,
-              city,
-              item.location || "",
-              zip,
-            ];
-          });
-        }
       } else {
-        // No checkboxes checked — export all records from businesses array
         exportData = businesses.map((item) => {
           const { street, city, state, zip } = parseLocation(
             item.location || ""
           );
           return [
             item.name || "",
-            item.phone || "",
-            item.phone || "",
+            item.phone1 || "",
+            [item.phone2, item.phone3, item.phone4, item.phone5, item.phone6]
+              .filter(Boolean)
+              .join(", ") || "",
             item["Owner"] || item["Business Management"] || "",
             item["Manager"] || item["Principal Contacts"] || "",
             item.email || "",
@@ -566,6 +539,73 @@
       XLSX.utils.book_append_sheet(workbook, worksheet, "Businesses");
       XLSX.writeFile(workbook, "businesses_export.xlsx");
     });
+  </script>
+  <script>
+    document
+      .querySelector(".custom-btn")
+      .addEventListener("click", function (e) {
+        e.preventDefault();
+
+        const findValue = document
+          .getElementById("searchInput")
+          .value.trim()
+          .toLowerCase();
+        const nearValue = document
+          .getElementById("nearInput")
+          .value.trim()
+          .toLowerCase();
+        const selectedCountry = document
+          .getElementById("selectedText")
+          .innerText.trim()
+          .toLowerCase();
+        if (!findValue) {
+          alert("Please select the business,category");
+          return;
+        }
+
+        const filtered = businesses.filter((biz) => {
+          const name = (biz.name || "").toLowerCase();
+          const category = (biz.category || "").toLowerCase();
+          const location = parseLocation(biz.location || "");
+          const city = (location.city || "").toLowerCase();
+          const state = (location.state || "").toLowerCase();
+          const zip = (location.zip || "").toLowerCase();
+          const country = (biz.country || "USA").toLowerCase();
+
+          const matchFind =
+            !findValue ||
+            name.includes(findValue) ||
+            category.includes(findValue);
+
+          const matchNear =
+            !nearValue ||
+            city.includes(nearValue) ||
+            state.includes(nearValue) ||
+            zip.includes(nearValue);
+
+          const matchCountry =
+            !selectedCountry || country.includes(selectedCountry);
+
+          return matchFind && matchNear && matchCountry;
+        });
+
+        currentPage = 1;
+        renderFilteredData(filtered);
+      });
+
+    function renderFilteredData(data) {
+      const tbody = document.getElementById("businessTableBody");
+      tbody.innerHTML = "";
+
+      if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="12">No data found.</td></tr>`;
+        document.getElementById("pagination").innerHTML = "";
+        return;
+      }
+
+      businesses = data;
+      renderTablePage(currentPage);
+    }
   </script>
 
   <script>
@@ -625,31 +665,69 @@
     }
 
     function selectCountry(code, event) {
-      document.getElementById("selectedText").innerText = code; // Shows "US" or "CA"
+      document.getElementById("selectedText").innerText = code;
       document.querySelector(".selected-flag").src =
         event.target.firstElementChild.src;
     }
 
-    /*  Near Input    */
     nearInput.addEventListener("focus", () => {
       nearDropdown.classList.add("active");
       filterNearDropdown();
     });
 
     function filterNearDropdown() {
-      const value = nearInput.value.toLowerCase();
-      let visible = 0;
+      const value = nearInput.value.toLowerCase().trim();
+      const nearDropdownItemsContainer =
+        document.getElementById("nearDropdownItems");
+      nearDropdownItemsContainer.innerHTML = "";
 
-      nearItems.forEach((item) => {
-        if (item.textContent.toLowerCase().includes(value)) {
-          item.style.display = "flex";
-          visible++;
-        } else {
-          item.style.display = "none";
+      // const selectedCountry = document
+      //   .getElementById("selectedText")
+      //   .innerText.trim()
+      //   .toLowerCase();
+
+      if (!value) {
+        document.getElementById("nearNoResults").classList.add("d-none");
+        return;
+      }
+
+      const uniqueCityStatePairs = new Set();
+
+      businesses.forEach((biz) => {
+        const city = (biz.city || "").toLowerCase();
+        const state = (biz.state || "").toLowerCase();
+        const country = (biz.country || "USA").toLowerCase();
+
+        if (
+          (city.includes(value) || state.includes(value)) 
+          // (!selectedCountry || country === selectedCountry)
+        ) {
+          const display = `${biz.city}, ${biz.state}`;
+          uniqueCityStatePairs.add(display);
         }
       });
 
-      nearNoResults.classList.toggle("d-none", visible !== 0);
+      if (uniqueCityStatePairs.size === 0) {
+        document.getElementById("nearNoResults").classList.remove("d-none");
+        return;
+      }
+
+      document.getElementById("nearNoResults").classList.add("d-none");
+
+      uniqueCityStatePairs.forEach((match) => {
+        const div = document.createElement("div");
+        div.className = "dropdown-item";
+        div.setAttribute("data-value", match);
+        div.innerHTML = `<i class="bi bi-geo-alt-fill"></i> ${match}`;
+        div.addEventListener("click", () => {
+          nearInput.value = match;
+          document
+            .getElementById("nearDropdownMenu")
+            .classList.remove("active");
+          toggleClearIcon(nearInput, "nearClearIcon");
+        });
+        nearDropdownItemsContainer.appendChild(div);
+      });
     }
 
     nearItems.forEach((item) => {
@@ -674,61 +752,18 @@
         icon.classList.add("d-none");
       }
     }
-
     function clearInput(inputId, iconId) {
       document.getElementById(inputId).value = "";
       document.getElementById(iconId).classList.add("d-none");
 
-      // Optionally re-trigger filtering
       if (inputId === "searchInput") {
         filterDropdown();
+        businesses = [...originalBusinesses];
+        currentPage = 1;
+        renderTablePage(currentPage);
       } else if (inputId === "nearInput") {
         filterNearDropdown();
       }
     }
-  </script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const form = document.querySelector("form");
-
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        const findText = document.getElementById("searchInput").value.trim();
-        const nearText = document.getElementById("nearInput").value.trim();
-        const selectedCountryText = document
-          .getElementById("selectedText")
-          .textContent.trim();
-
-        let countryCode = "USA"; // default
-
-        if (selectedCountryText === "CA") {
-          countryCode = "CAN";
-        } else if (selectedCountryText === "United States") {
-          countryCode = "USA";
-        }
-
-        const findParam = encodeURIComponent(findText);
-        const nearParam = encodeURIComponent(nearText);
-        const countryParam = encodeURIComponent(countryCode);
-
-        const url = `https://www.bbb.org/search?find_text=${findParam}&find_loc=${nearParam}&find_country=${countryParam}`;
-
-        fetch("http://localhost:3000/scrape", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            // Handle scraped data
-          })
-          .catch((err) => {
-            // Handle error
-          });
-      });
-    });
   </script>
 </html>
