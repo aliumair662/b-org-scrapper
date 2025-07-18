@@ -274,6 +274,7 @@
               <th>Cell Phone</th>
               <th>Owner Name</th>
               <th>Manager Name</th>
+              <th>Website</th>
               <th>Email Address</th>
               <th>Country</th>
               <th>State Province</th>
@@ -371,6 +372,7 @@
     white-space: normal;">${extras}</td>
       <td>${item["Owner"] || item["Business Management"] || ""}</td>
       <td>${item["Manager"] || item["Principal Contacts"] || ""}</td>
+      <td>${item.website || ""}</td>
       <td>${item.email || ""}</td>
       <td>${item.country || "USA"}</td>
       <td>${state}</td>
@@ -507,6 +509,7 @@
         "Cell Phone",
         "Owner Name",
         "Manager Name",
+        "Website",
         "Email Address",
         "Country",
         "State Province",
@@ -549,6 +552,7 @@
               .join(", ") || "",
             item["Owner"] || item["Business Management"] || "",
             item["Manager"] || item["Principal Contacts"] || "",
+            item.website || "",
             item.email || "",
             item.country || "USA",
             state,
@@ -784,6 +788,7 @@
         scrapeBtn.classList.add("d-none");
         const scrapeInprogress = document.querySelector("#scrape-inprogress");
         scrapeInprogress.classList.remove("d-none");
+        console.log('scrapper is running');
       } catch (error) {
         console.log("Error activating scrapper: ", error);
       }
