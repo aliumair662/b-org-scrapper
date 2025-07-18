@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 
 //const {runBatchScrape} =require("../scraper/index");
-const { testConnection, getAllData } = require("./db");
+const { testConnection, getAllData, getNears, runScrapper } = require("./db");
 
 const app = express();
 app.use(cors());
@@ -17,10 +17,30 @@ app.post("/batch-scrape", async (_, res) => {
   
   app.get("/api/businesses", async (req, res) => {
     try {
-      const data = await getAllData();
+      const data = await getAllData(req);
       res.json(data);
     } catch (err) {
       res.status(500).json({ error: "Failed to fetch businesses" });
+    }
+  });
+
+  app.get("/api/nears", async (req, res) => {
+    try {
+      const country = req.query?.country || '';
+      const nearQuery = req.query?.q || '';
+      const data = await getNears(country, nearQuery);
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: err });
+    }
+  });
+
+  app.post("/api/run-scrapper", async (req, res) => {
+    try {
+      const data = await runScrapper();
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: err });
     }
   });
   

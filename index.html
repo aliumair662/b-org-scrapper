@@ -214,22 +214,22 @@
                   <img class="selected-flag" src="" />
                   <span id="selectedText"></span
                   ><i class="bi bi-chevron-down"></i>
-  
+
                   <ul
                     class="options list-unstyled"
                     id="options"
                     style="display: none"
                   >
-                    <li onclick="selectCountry('US', event)">
+                    <li onclick="selectCountry('USA', event)">
                       <img
                         class="country-img"
                         src="https://m.bbb.org/terminuscontent/dist/img/header/flag-us-100__100w.png"
                         alt=""
                       />
-  
+
                       United States
                     </li>
-                    <li onclick="selectCountry('CA',event )">
+                    <li onclick="selectCountry('CAN',event )">
                       <img
                         class="country-img"
                         src="https://m.bbb.org/terminuscontent/dist/img/header/flag-ca-100__100w.png"
@@ -240,13 +240,25 @@
                   </ul>
                 </div>
               </div>
-            
+
               <button class="btn custom-btn">Search</button>
             </div>
           </form>
-          <button class="btn custom-btn export" id="exportBtn">
-            Export to Excel <i class="bi bi-file-earmark-arrow-up"></i>
-          </button>
+          <div>
+            <button
+              class="btn custom-btn d-none"
+              id="scrape-inprogress"
+              disabled
+            >
+              Scrape Inprogress...
+            </button>
+            <button class="btn custom-btn export" id="start-scraping">
+              Scrape again
+            </button>
+            <button class="btn custom-btn export" id="exportBtn">
+              Export to Excel <i class="bi bi-file-earmark-arrow-up"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -257,6 +269,7 @@
             <tr>
               <th><input type="checkbox" id="selectAll" /></th>
               <th>Business Name</th>
+              <th>Category</th>
               <th>Main Number</th>
               <th>Cell Phone</th>
               <th>Owner Name</th>
@@ -352,6 +365,7 @@
         tr.innerHTML = `
       <td><input type="checkbox" class="rowCheckbox" /></td>
       <td>${item.name || ""}</td>
+      <td>${item.category || ""}</td>
       <td>${item.phone1 || ""}</td>
       <td style="overflow: visible;
     white-space: normal;">${extras}</td>
@@ -444,11 +458,26 @@
         });
       });
     }
+    const handleScrappeButton = () => {
+      if (window.settings) {
+        if (settings.scrapper_running) {
+          let scrapeBtn = document.querySelector("#start-scraping");
+          scrapeBtn.classList.add("d-none");
+          const scrapeInprogress = document.querySelector("#scrape-inprogress");
+          scrapeInprogress.classList.remove("d-none");
+        }
+      }
+    };
     let originalBusinesses = [];
-    async function loadBusinesses() {
+    async function loadBusinesses(search = "", near = "", country = "") {
       try {
-        const res = await fetch("http://localhost:3000/api/businesses");
-        businesses = await res.json();
+        const res = await fetch(
+          `http://localhost:3000/api/businesses?q=${search}&near=${near}&country=${country}`
+        );
+        const response = await res.json();
+        window.settings = response.settings;
+        handleScrappeButton();
+        businesses = response.results;
         originalBusinesses = [...businesses];
 
         if (!Array.isArray(businesses) || businesses.length === 0) {
@@ -467,13 +496,13 @@
         console.error("Failed to load data:", err);
       }
     }
-
     window.onload = loadBusinesses;
   </script>
   <script>
     document.getElementById("exportBtn").addEventListener("click", function () {
       const headers = [
         "Business Name",
+        "Category",
         "Main Number",
         "Cell Phone",
         "Owner Name",
@@ -497,7 +526,7 @@
           const checkbox = row.querySelector(".rowCheckbox");
           if (checkbox && checkbox.checked) {
             const cells = row.querySelectorAll("td");
-            if (cells.length === 12) {
+            if (cells.length === 13) {
               const rowData = [];
               for (let i = 1; i < cells.length; i++) {
                 rowData.push(cells[i].innerText.trim());
@@ -513,6 +542,7 @@
           );
           return [
             item.name || "",
+            item.category || "",
             item.phone1 || "",
             [item.phone2, item.phone3, item.phone4, item.phone5, item.phone6]
               .filter(Boolean)
@@ -546,51 +576,12 @@
       .addEventListener("click", function (e) {
         e.preventDefault();
 
-        const findValue = document
-          .getElementById("searchInput")
-          .value.trim()
-          .toLowerCase();
-        const nearValue = document
-          .getElementById("nearInput")
-          .value.trim()
-          .toLowerCase();
+        const findValue = document.getElementById("searchInput").value.trim();
+        const nearValue = document.getElementById("nearInput").value.trim();
         const selectedCountry = document
           .getElementById("selectedText")
-          .innerText.trim()
-          .toLowerCase();
-        if (!findValue) {
-          alert("Please select the business,category");
-          return;
-        }
-
-        const filtered = businesses.filter((biz) => {
-          const name = (biz.name || "").toLowerCase();
-          const category = (biz.category || "").toLowerCase();
-          const location = parseLocation(biz.location || "");
-          const city = (location.city || "").toLowerCase();
-          const state = (location.state || "").toLowerCase();
-          const zip = (location.zip || "").toLowerCase();
-          const country = (biz.country || "USA").toLowerCase();
-
-          const matchFind =
-            !findValue ||
-            name.includes(findValue) ||
-            category.includes(findValue);
-
-          const matchNear =
-            !nearValue ||
-            city.includes(nearValue) ||
-            state.includes(nearValue) ||
-            zip.includes(nearValue);
-
-          const matchCountry =
-            !selectedCountry || country.includes(selectedCountry);
-
-          return matchFind && matchNear && matchCountry;
-        });
-
-        currentPage = 1;
-        renderFilteredData(filtered);
+          .innerText.trim();
+        loadBusinesses(findValue, nearValue, selectedCountry);
       });
 
     function renderFilteredData(data) {
@@ -629,8 +620,10 @@
       dropdown.classList.add("active");
       filterDropdown();
     });
+
     function filterDropdown() {
       const value = searchInput.value.toLowerCase();
+      console.log(value);
       let visible = 0;
 
       categoryItems.forEach((item) => {
@@ -644,11 +637,13 @@
 
       noResults.classList.toggle("d-none", visible !== 0);
     }
+
     categoryItems.forEach((item) => {
       item.addEventListener("click", () => {
         searchInput.value = item.getAttribute("data-value");
         dropdown.classList.remove("active");
         toggleClearIcon(searchInput, "searchClearIcon");
+        searchInput.dispatchEvent(new Event("input", { bubbles: true }));
       });
     });
     document.addEventListener("click", (e) => {
@@ -668,6 +663,8 @@
       document.getElementById("selectedText").innerText = code;
       document.querySelector(".selected-flag").src =
         event.target.firstElementChild.src;
+
+      filterNearDropdown();
     }
 
     nearInput.addEventListener("focus", () => {
@@ -675,46 +672,24 @@
       filterNearDropdown();
     });
 
-    function filterNearDropdown() {
+    async function filterNearDropdown() {
       const value = nearInput.value.toLowerCase().trim();
       const nearDropdownItemsContainer =
         document.getElementById("nearDropdownItems");
       nearDropdownItemsContainer.innerHTML = "";
-
-      // const selectedCountry = document
-      //   .getElementById("selectedText")
-      //   .innerText.trim()
-      //   .toLowerCase();
-
       if (!value) {
         document.getElementById("nearNoResults").classList.add("d-none");
         return;
       }
-
-      const uniqueCityStatePairs = new Set();
-
-      businesses.forEach((biz) => {
-        const city = (biz.city || "").toLowerCase();
-        const state = (biz.state || "").toLowerCase();
-        const country = (biz.country || "USA").toLowerCase();
-
-        if (
-          (city.includes(value) || state.includes(value)) 
-          // (!selectedCountry || country === selectedCountry)
-        ) {
-          const display = `${biz.city}, ${biz.state}`;
-          uniqueCityStatePairs.add(display);
-        }
-      });
-
-      if (uniqueCityStatePairs.size === 0) {
+      const nears = await loadNears();
+      if (nears.length === 0) {
         document.getElementById("nearNoResults").classList.remove("d-none");
         return;
       }
 
       document.getElementById("nearNoResults").classList.add("d-none");
 
-      uniqueCityStatePairs.forEach((match) => {
+      nears.forEach((match) => {
         const div = document.createElement("div");
         div.className = "dropdown-item";
         div.setAttribute("data-value", match);
@@ -728,6 +703,26 @@
         });
         nearDropdownItemsContainer.appendChild(div);
       });
+    }
+
+    async function loadNears() {
+      try {
+        const country = document
+          .getElementById("selectedText")
+          .innerText.trim();
+        const nearValue = document.getElementById("nearInput").value.trim();
+        const res = await fetch(
+          "http://localhost:3000/api/nears?country=" +
+            country +
+            "&q=" +
+            nearValue
+        );
+        nears = await res.json();
+        return nears;
+      } catch (err) {
+        console.log("Error fetching nears: ", err);
+        return [];
+      }
     }
 
     nearItems.forEach((item) => {
@@ -765,5 +760,33 @@
         filterNearDropdown();
       }
     }
+
+    let scrapeBtn = document.querySelector("#start-scraping");
+    if (scrapeBtn) {
+      scrapeBtn.addEventListener("click", async (e) => {
+        await runScrapper();
+      });
+    }
+
+    const runScrapper = async () => {
+      try {
+        const response = await fetch("http://localhost:3000/api/run-scrapper", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        let scrapeBtn = document.querySelector("#start-scraping");
+        scrapeBtn.classList.add("d-none");
+        const scrapeInprogress = document.querySelector("#scrape-inprogress");
+        scrapeInprogress.classList.remove("d-none");
+      } catch (error) {
+        console.log("Error activating scrapper: ", error);
+      }
+    };
   </script>
 </html>
