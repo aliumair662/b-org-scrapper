@@ -297,6 +297,15 @@
   </body>
 
   <script>
+
+// config.js or directly in your script
+const API_BASE_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000'
+  : 'http://74.208.99.105:3000';
+
+
+
+
     const recordsPerPage = 10;
     let currentPage = 1;
     let businesses = [];
@@ -474,7 +483,7 @@
     async function loadBusinesses(search = "", near = "", country = "") {
       try {
         const res = await fetch(
-          `http://localhost:3000/api/businesses?q=${search}&near=${near}&country=${country}`
+          `${API_BASE_UR}/api/businesses?q=${search}&near=${near}&country=${country}`
         );
         const response = await res.json();
         window.settings = response.settings;
@@ -716,7 +725,7 @@
           .innerText.trim();
         const nearValue = document.getElementById("nearInput").value.trim();
         const res = await fetch(
-          "http://localhost:3000/api/nears?country=" +
+          `${API_BASE_UR}/api/nears?country=` +
             country +
             "&q=" +
             nearValue
@@ -774,7 +783,7 @@
 
     const runScrapper = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/run-scrapper", {
+        const response = await fetch(`${API_BASE_UR}/api/run-scrapper`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
