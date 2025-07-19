@@ -2,6 +2,7 @@
 const express = require("express");
 const cors = require("cors");
 
+require('dotenv').config();
 //const {runBatchScrape} =require("../scraper/index");
 const { testConnection, getAllData, getNears, runScrapper } = require("./db");
 
