@@ -56,6 +56,23 @@ async function scrapeOnePage(page, url) {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
   console.log("page loaded");
 
+  try {
+    const hasForm = await listPage.$("form.stack");
+    if (hasForm) {
+      console.log("Detected filter form, selecting non-accredited businesses…");
+  
+      await listPage.click('input[name="searchAccreditedToggleGroup"][value="false"]');
+      await listPage.click('button[type="submit"], input[type="submit"]');
+      await listPage.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 60000 });
+  
+      console.log("Filter form submitted.");
+    }
+  } catch (err) {
+    console.warn("No filter form detected or submission failed.");
+  }
+  
+
+
   await autoScroll(page);
 
   try {
@@ -255,6 +272,7 @@ async function runBatchScrape() {
   await listPage.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
   );
+  
   const detailPage = await browser.newPage();
   await detailPage.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
