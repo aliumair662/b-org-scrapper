@@ -299,7 +299,7 @@
   <script>
 
 // config.js or directly in your script
-const API_BASE_URL = window.location.hostname === 'localhost'
+const API_BASE_URL = window.location.hostname === '127.0.0.1'
   ? 'http://localhost:3000'
   : 'http://74.208.99.105:3000';
 
@@ -483,7 +483,7 @@ const API_BASE_URL = window.location.hostname === 'localhost'
     async function loadBusinesses(search = "", near = "", country = "") {
       try {
         const res = await fetch(
-          `${API_BASE_UR}/api/businesses?q=${search}&near=${near}&country=${country}`
+          `${API_BASE_URL}/api/businesses?q=${search}&near=${near}&country=${country}`
         );
         const response = await res.json();
         window.settings = response.settings;
@@ -725,7 +725,7 @@ const API_BASE_URL = window.location.hostname === 'localhost'
           .innerText.trim();
         const nearValue = document.getElementById("nearInput").value.trim();
         const res = await fetch(
-          `${API_BASE_UR}/api/nears?country=` +
+          `${API_BASE_URL}/api/nears?country=` +
             country +
             "&q=" +
             nearValue
@@ -783,7 +783,7 @@ const API_BASE_URL = window.location.hostname === 'localhost'
 
     const runScrapper = async () => {
       try {
-        const response = await fetch(`${API_BASE_UR}/api/run-scrapper`, {
+        const response = await fetch(`${API_BASE_URL}/api/run-scrapper`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
