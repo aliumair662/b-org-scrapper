@@ -21,7 +21,7 @@ const { insertData, testConnection, getAllData } = require("./db");
 //testConnection();
 
 const CATEGORIES = [
- "Roofing Contractors",
+ //"Roofing Contractors",
   "Real Estate Consultant",
   "General Contractor",
   "Used Car Dealers",
@@ -60,11 +60,10 @@ async function scrapeOnePage(page, url) {
 
   try {
     await page.waitForSelector(".card.result-card", { timeout: 60000 });
-
     console.log("found cards");
-  } catch {
+  } catch (err) {
     console.error(
-      "       ✖ no cards found on this page, selector might be outdated or page requires location"
+      "✖ No cards found on this page. Selector might be outdated or page requires location."
     );
     throw err;
   }
