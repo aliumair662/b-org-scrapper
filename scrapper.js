@@ -3,6 +3,7 @@ const fs = require("fs/promises");
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fetch = require('node-fetch');
 
 const app = express();
 app.use(cors());
@@ -260,7 +261,7 @@ async function scrapeBusinessDetails(detailPage, url) {
   let websiteEmail = "";
   if (data.website) {
     try {
-      const fetch = (await import("node-fetch")).default;
+     
       const response = await fetch(data.website, { timeout: 15000 });
       const body = await response.text();
 
