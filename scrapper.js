@@ -61,9 +61,15 @@ console.debug("DEBUG: page.goto completed");
 console.debug("DEBUG: Taking screenshot...");
 await page.screenshot({ path: "debug-screenshot.png", fullPage: true });
 
-console.debug("DEBUG: Saving HTML content...");
-const html = await page.content();
-fs.writeFileSync("debug-page.html", html);
+//console.debug("DEBUG: Saving HTML content...");
+//const html = await page.content();
+//fs.writeFileSync("debug-page.html", html);
+
+const title = await page.title();
+console.log(`📄 Page title: ${title}`);
+
+const heading = await page.$eval('h1', el => el.innerText).catch(() => '');
+console.log(`📌 Heading: ${heading}`);
 
 console.log("page loaded");
 
