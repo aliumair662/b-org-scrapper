@@ -57,18 +57,19 @@ async function scrapeOnePage(page, url) {
   console.log("page loaded");
 
   try {
-    const categoryTitle = await page.$eval(
-      ".bds-h1.search-results-category-title",
-      el => el.textContent.trim()
-    );
+    await page.waitForSelector(".bds-h1.search-results-category-title", { timeout: 10000 });
+  await page.waitForSelector(".search-results-heading", { timeout: 10000 });
+
   
-    const resultSummary = await page.$eval(
-      ".search-results-heading",
-      el => el.textContent.trim().replace(/\s+/g, " ")
-    );
+    if (categoryElement && summaryElement) {
+      const categoryTitle = await page.evaluate(el => el.textContent.trim(), categoryElement);
+      const resultSummary = await page.evaluate(el => el.textContent.trim().replace(/\s+/g, " "), summaryElement);
   
-    console.log(`✔ Category: ${categoryTitle}`);
-    console.log(`✔ Summary: ${resultSummary}`);
+      console.log(`✔ Category: ${categoryTitle}`);
+      console.log(`✔ Summary: ${resultSummary}`);
+    } else {
+      console.warn("⚠ Category or Summary element not found.");
+    }
   } catch (err) {
     console.error("✖ Failed to extract category or result summary", err);
   }
