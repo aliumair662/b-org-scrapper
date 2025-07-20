@@ -2,6 +2,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs/promises");
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 app.use(cors());
@@ -53,28 +54,48 @@ async function autoScroll(page) {
 /* scrape ONE page (returns array of rows) */
 async function scrapeOnePage(page, url) {
   console.log(` ↳ visiting ${url}`);
-//await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-await page.waitForLoadState('networkidle');
+
+await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+console.debug("DEBUG: page.goto completed");
+
+console.debug("DEBUG: Taking screenshot...");
+await page.screenshot({ path: "debug-screenshot.png", fullPage: true });
+
+console.debug("DEBUG: Saving HTML content...");
 const html = await page.content();
-require("fs").writeFileSync(`debug-page-${Date.now()}.html`, html);
+fs.writeFileSync("debug-page.html", html);
 
 console.log("page loaded");
 
 try {
+  console.debug("DEBUG: Waiting for category title selector...");
   await page.waitForSelector(".bds-h1.search-results-category-title", { timeout: 10000 });
+
+  console.debug("DEBUG: Waiting for summary heading selector...");
   await page.waitForSelector(".search-results-heading", { timeout: 10000 });
 
+  console.debug("DEBUG: Attempting to grab category element...");
   const categoryElement = await page.$(".bds-h1.search-results-category-title");
+
+  console.debug("DEBUG: Attempting to grab summary element...");
   const summaryElement = await page.$(".search-results-heading");
 
   if (categoryElement && summaryElement) {
+    console.debug("DEBUG: Extracting category title text...");
     const categoryTitle = await page.evaluate(el => el.textContent.trim(), categoryElement);
-    const resultSummary = await page.evaluate(el => el.textContent.trim().replace(/\s+/g, " "), summaryElement);
+
+    console.debug("DEBUG: Extracting summary text...");
+    const resultSummary = await page.evaluate(
+      el => el.textContent.trim().replace(/\s+/g, " "),
+      summaryElement
+    );
 
     console.log(`✔ Category: ${categoryTitle}`);
     console.log(`✔ Summary: ${resultSummary}`);
   } else {
     console.warn("⚠ Category or Summary element not found.");
+    if (!categoryElement) console.debug("DEBUG: categoryElement is null");
+    if (!summaryElement) console.debug("DEBUG: summaryElement is null");
   }
 } catch (err) {
   console.error("✖ Failed to extract category or result summary", err);
