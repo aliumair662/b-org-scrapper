@@ -53,7 +53,11 @@ async function autoScroll(page) {
 /* scrape ONE page (returns array of rows) */
 async function scrapeOnePage(page, url) {
   console.log(` ↳ visiting ${url}`);
-await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+//await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+await page.waitForLoadState('networkidle');
+const html = await page.content();
+require("fs").writeFileSync(`debug-page-${Date.now()}.html`, html);
+
 console.log("page loaded");
 
 try {
