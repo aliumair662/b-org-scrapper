@@ -200,21 +200,19 @@ async function scrapeCategory(listPage, cat, country, detailPage) {
 async function scrapeBusinessDetails(detailPage, url) {
   await detailPage.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-  // Wait for something that only appears on detail pages
+  // Wait for key selector
   await detailPage.waitForSelector("h1", { timeout: 20000 }).catch(() => {});
 
-  return await detailPage.evaluate(async () => {
+  const data = await detailPage.evaluate(() => {
     const $ = (sel) => document.querySelector(sel);
     const $$ = (sel) =>
       Array.from(document.querySelectorAll(sel)).filter(Boolean);
     const text = (sel) => $(sel)?.textContent.trim() || "";
 
-    /* ─── 1. collect ALL <a href="tel:…"> on the page ─── */
     const phoneLinks = $$('a[href^="tel:"]')
       .map((a) => a.textContent.trim())
       .filter((v, i, arr) => v && arr.indexOf(v) === i); // dedupe
 
-    /* rename them as phone1, phone2, … */
     const phoneFields = {};
     phoneLinks.forEach((num, idx) => {
       phoneFields[`phone${idx + 1}`] = num;
@@ -225,11 +223,9 @@ async function scrapeBusinessDetails(detailPage, url) {
       $("a[data-js='business-website']")?.href ||
       "";
 
-    // Extract address and email on the detail page
     const fullAddress =
       document.querySelector(".bpr-overview-address")?.textContent.trim() || "";
 
-    // Extract owner/contact info dynamically
     const ownerKeys = [
       "Business Management",
       "Principal Contacts",
@@ -238,8 +234,6 @@ async function scrapeBusinessDetails(detailPage, url) {
       "Owner & LLC Managing Member",
     ];
     const ownerInfo = {};
-
-    // Query all <dt> elements inside .bpr-details
     const dtElements = Array.from(document.querySelectorAll(".bpr-details dt"));
     dtElements.forEach((dt) => {
       const label = dt.textContent.trim();
@@ -254,38 +248,40 @@ async function scrapeBusinessDetails(detailPage, url) {
       }
     });
 
-    // Scrape email from website if there's a link
-    let websiteEmail = "";
-    if (websiteLink) {
-      try {
-        console.log("Fetching website:", websiteLink);
-        // Open the business website
-        const response = await fetch(websiteLink);
-        const body = await response.text();
-
-        // Use a regex to find any email address in the website HTML (you can customize this if needed)
-        const emailMatch = body.match(
-          /([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/
-        );
-        if (emailMatch) {
-          websiteEmail = emailMatch[0];
-        }
-      } catch (error) {
-        console.error("Error fetching website:", websiteLink, error);
-      }
-    }
-
-    // Return all data together, include email from website if found
     return {
       fullAddress,
-      email: websiteEmail,
       website: websiteLink,
-      websiteEmail,
       ...phoneFields,
       ...ownerInfo,
     };
   });
+
+  // 🔍 Fetch email from website (server-side)
+  let websiteEmail = "";
+  if (data.website) {
+    try {
+      const fetch = (await import("node-fetch")).default;
+      const response = await fetch(data.website, { timeout: 15000 });
+      const body = await response.text();
+
+      const match = body.match(
+        /([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/
+      );
+      if (match) {
+        websiteEmail = match[0];
+      }
+    } catch (err) {
+      console.error("❌ Error fetching website email:", err);
+    }
+  }
+
+  return {
+    ...data,
+    email: websiteEmail,
+    websiteEmail,
+  };
 }
+
 
 /* ‑‑‑‑‑‑‑‑‑‑‑‑  BATCH endpoint  ‑‑‑‑‑‑‑‑‑‑‑‑ */
 async function runBatchScrape() {
