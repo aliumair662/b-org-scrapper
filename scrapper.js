@@ -21,15 +21,15 @@ const { insertData, testConnection, getAllData } = require("./db");
 //testConnection();
 
 const CATEGORIES = [
-  "Roofing Contractors",
+ // "Roofing Contractors",
   "Real Estate Consultant",
-  "General Contractor",
-  "Used Car Dealers",
-  "Heating Contractors",
-  "Air Conditioning Contractors",
-  "Auto Repairs",
-  "Financial Services",
-  "Tree Services",
+  // "General Contractor",
+  // "Used Car Dealers",
+  // "Heating Contractors",
+  // "Air Conditioning Contractors",
+  // "Auto Repairs",
+  // "Financial Services",
+  // "Tree Services",
 ];
 const COUNTRIES = ["USA", "CAN"];
 const FILE_FOR = (c) => `${c}.json`;
@@ -55,23 +55,6 @@ async function scrapeOnePage(page, url) {
   console.log(` ↳ visiting ${url}`);
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
   console.log("page loaded");
-
-  try {
-    const hasForm = await listPage.$("form.stack");
-    if (hasForm) {
-      console.log("Detected filter form, selecting non-accredited businesses…");
-  
-      await listPage.click('input[name="searchAccreditedToggleGroup"][value="false"]');
-      await listPage.click('button[type="submit"], input[type="submit"]');
-      await listPage.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 60000 });
-  
-      console.log("Filter form submitted.");
-    }
-  } catch (err) {
-    console.warn("No filter form detected or submission failed.");
-  }
-  
-
 
   await autoScroll(page);
 
@@ -113,12 +96,15 @@ async function scrapeOnePage(page, url) {
 
       const loc =
         q(".bds-body.text-size-5.text-gray-70")?.textContent.trim() || "";
+        //Check for "Accredited Business"
+      const accredited = !!card.querySelector('img[alt="Accredited Business"]');
       return {
         name: q(".result-business-name a")?.textContent.trim() || "",
         rating: q(".result-rating")?.textContent.trim() || "",
         location: loc,
         phone: q(".result-business-info a")?.textContent.trim() || "",
         link: q(".result-business-name a")?.href || "",
+        accredited:accredited,
         ...parseLoc(loc),
       };
     })
@@ -293,9 +279,9 @@ async function runBatchScrape() {
       }
       await delay(1500); // 1.5 s courtesy pause
     }
-    console.log(`  → inserting ${regionRows.length} rows`);
-    await fs.writeFile(FILE_FOR(country), JSON.stringify(regionRows, null, 2));
-    await insertData(regionRows); // 👈 Save to MongoDB
+    //console.log(`  → inserting ${regionRows.length} rows`);
+    //await fs.writeFile(FILE_FOR(country), JSON.stringify(regionRows, null, 2));
+    //await insertData(regionRows); // 👈 Save to MongoDB
     console.log(`  ✓ done with ${country}`);
   }
   await browser.close();
