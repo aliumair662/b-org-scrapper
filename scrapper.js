@@ -173,18 +173,18 @@ async function scrapeCategory(listPage, cat, country, detailPage) {
   while (url) {
     const rows = await scrapeOnePage(listPage, url);
     // After scraping one search-result page:
-    for (const row of rows) {
-      if (!row.link) continue;
-      const extra = await scrapeBusinessDetails(detailPage, row.link);
-      Object.assign(row, extra);
-      row.category = cat;
-      row.country = country;
-      await delay(800);
-    }
+    // for (const row of rows) {
+    //   if (!row.link) continue;
+    //   const extra = await scrapeBusinessDetails(detailPage, row.link);
+    //   Object.assign(row, extra);
+    //   row.category = cat;
+    //   row.country = country;
+    //   await delay(800);
+    // }
 
     all.push(...rows);
 
-    await insertData(rows);
+    //await insertData(rows);
 
     const next = await listPage
       .$eval('nav[aria-label="pagination"] a[rel="next"]', (a) => a?.href)
