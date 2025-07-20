@@ -184,7 +184,7 @@ async function scrapeCategory(listPage, cat, country, detailPage) {
 
     all.push(...rows);
 
-    //await insertData(rows);
+    await insertData(rows);
 
     const next = await listPage
       .$eval('nav[aria-label="pagination"] a[rel="next"]', (a) => a?.href)
