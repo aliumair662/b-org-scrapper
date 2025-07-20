@@ -119,7 +119,7 @@ try {
     );
     throw err;
   }
-
+  console.debug("🧹 Parsing result card details...");
   return page.$$eval(".card.result-card", (cards) =>
     cards.map((card) => {
       const q = (sel) => card.querySelector(sel);
