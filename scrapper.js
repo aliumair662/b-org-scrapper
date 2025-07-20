@@ -21,7 +21,7 @@ const { insertData, testConnection, getAllData } = require("./db");
 //testConnection();
 
 const CATEGORIES = [
- //"Roofing Contractors",
+ "Roofing Contractors",
   "Real Estate Consultant",
   "General Contractor",
   "Used Car Dealers",
@@ -56,8 +56,22 @@ async function scrapeOnePage(page, url) {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
   console.log("page loaded");
 
-  const content = await page.content();
- console.log(content.slice(0, 1000));
+  try {
+    const categoryTitle = await page.$eval(
+      ".bds-h1.search-results-category-title",
+      el => el.textContent.trim()
+    );
+  
+    const resultSummary = await page.$eval(
+      ".search-results-heading",
+      el => el.textContent.trim().replace(/\s+/g, " ")
+    );
+  
+    console.log(`✔ Category: ${categoryTitle}`);
+    console.log(`✔ Summary: ${resultSummary}`);
+  } catch (err) {
+    console.error("✖ Failed to extract category or result summary", err);
+  }
 
   await autoScroll(page);
 
