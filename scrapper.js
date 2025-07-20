@@ -53,26 +53,29 @@ async function autoScroll(page) {
 /* scrape ONE page (returns array of rows) */
 async function scrapeOnePage(page, url) {
   console.log(` ↳ visiting ${url}`);
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-  console.log("page loaded");
+await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+console.log("page loaded");
 
-  try {
-    await page.waitForSelector(".bds-h1.search-results-category-title", { timeout: 10000 });
+try {
+  await page.waitForSelector(".bds-h1.search-results-category-title", { timeout: 10000 });
   await page.waitForSelector(".search-results-heading", { timeout: 10000 });
 
-  
-    if (categoryElement && summaryElement) {
-      const categoryTitle = await page.evaluate(el => el.textContent.trim(), categoryElement);
-      const resultSummary = await page.evaluate(el => el.textContent.trim().replace(/\s+/g, " "), summaryElement);
-  
-      console.log(`✔ Category: ${categoryTitle}`);
-      console.log(`✔ Summary: ${resultSummary}`);
-    } else {
-      console.warn("⚠ Category or Summary element not found.");
-    }
-  } catch (err) {
-    console.error("✖ Failed to extract category or result summary", err);
+  const categoryElement = await page.$(".bds-h1.search-results-category-title");
+  const summaryElement = await page.$(".search-results-heading");
+
+  if (categoryElement && summaryElement) {
+    const categoryTitle = await page.evaluate(el => el.textContent.trim(), categoryElement);
+    const resultSummary = await page.evaluate(el => el.textContent.trim().replace(/\s+/g, " "), summaryElement);
+
+    console.log(`✔ Category: ${categoryTitle}`);
+    console.log(`✔ Summary: ${resultSummary}`);
+  } else {
+    console.warn("⚠ Category or Summary element not found.");
   }
+} catch (err) {
+  console.error("✖ Failed to extract category or result summary", err);
+}
+
 
   await autoScroll(page);
 
