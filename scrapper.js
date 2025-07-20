@@ -56,6 +56,9 @@ async function scrapeOnePage(page, url) {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
   console.log("page loaded");
 
+  const content = await page.content();
+ console.log(content.slice(0, 1000));
+
   await autoScroll(page);
 
   try {
