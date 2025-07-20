@@ -241,7 +241,7 @@ async function runBatchScrape() {
   console.log("[scrape] starting…");
   const browser = await puppeteer
     .launch({
-      headless: false,
+      headless: "new",
       defaultViewport: null,
       args: [
         "--no-sandbox",
