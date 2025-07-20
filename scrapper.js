@@ -21,15 +21,15 @@ const { insertData, testConnection, getAllData } = require("./db");
 //testConnection();
 
 const CATEGORIES = [
- // "Roofing Contractors",
+ "Roofing Contractors",
   "Real Estate Consultant",
-  // "General Contractor",
-  // "Used Car Dealers",
-  // "Heating Contractors",
-  // "Air Conditioning Contractors",
-  // "Auto Repairs",
-  // "Financial Services",
-  // "Tree Services",
+  "General Contractor",
+  "Used Car Dealers",
+  "Heating Contractors",
+  "Air Conditioning Contractors",
+  "Auto Repairs",
+  "Financial Services",
+  "Tree Services",
 ];
 const COUNTRIES = ["USA", "CAN"];
 const FILE_FOR = (c) => `${c}.json`;
@@ -241,7 +241,7 @@ async function runBatchScrape() {
   console.log("[scrape] starting…");
   const browser = await puppeteer
     .launch({
-      headless: "new",
+      headless: false,
       defaultViewport: null,
       args: [
         "--no-sandbox",
