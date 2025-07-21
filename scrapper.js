@@ -179,6 +179,12 @@ async function scrapeCategory(listPage, cat, country, detailPage) {
     const rows = await scrapeOnePage(listPage, url);
     console.log(`📦 Found ${rows.length} listings on page ${pageNo}`);
 
+    rows.forEach(row => {
+      row.category = cat;
+      row.country = country;
+    });
+    
+
     // for (const [i, row] of rows.entries()) {
     //   if (!row.link) {
     //     console.warn(`⚠️ Skipping row ${i} — no link`);
