@@ -1,9 +1,11 @@
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const fs = require("fs/promises");
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fetch = require('node-fetch');
+puppeteer.use(StealthPlugin());
 
 const app = express();
 app.use(cors());
@@ -284,16 +286,16 @@ async function scrapeBusinessDetails(detailPage, url) {
 
     // Placeholder for optional email scraping
     let websiteEmail = "";
-    // if (data.website) {
-    //   try {
-    //     const response = await fetch(data.website, { timeout: 15000 });
-    //     const body = await response.text();
-    //     const match = body.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/);
-    //     if (match) websiteEmail = match[0];
-    //   } catch (err) {
-    //     console.error("❌ Error fetching email from website", err);
-    //   }
-    // }
+    if (data.website) {
+      try {
+        const response = await fetch(data.website, { timeout: 15000 });
+        const body = await response.text();
+        const match = body.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/);
+        if (match) websiteEmail = match[0];
+      } catch (err) {
+        console.error("❌ Error fetching email from website", err);
+      }
+    }
 
     return {
       ...data,
@@ -352,6 +354,15 @@ async function runBatchScrape() {
   await detailPage.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
   );
+
+  await listPage.setExtraHTTPHeaders({
+    "Accept-Language": "en-US,en;q=0.9",
+  });
+  
+  await detailPage.setExtraHTTPHeaders({
+    "Accept-Language": "en-US,en;q=0.9",
+  });
+  
   for (const country of COUNTRIES) {
     console.log(`[scrape] country ${country}`);
     // let regionRows = [];
