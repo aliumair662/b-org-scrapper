@@ -1,11 +1,13 @@
-// test.js
 const puppeteer = require("puppeteer");
-const fs = require("fs/promises");
 
 (async () => {
   const url = "https://www.bbb.org/us/oh/columbus/profile/home-improvement/mdg-contractors-group-0302-70129939";
 
-  const browser = await puppeteer.launch({ headless: "new" }); // Use `true` if you're using an older Puppeteer version
+  const browser = await puppeteer.launch({
+    headless: "new", // or true
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
   const page = await browser.newPage();
 
   try {
