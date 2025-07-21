@@ -192,6 +192,15 @@ async function resetScrapperFlag() {
     await client.close();
   }
 }
+async function getIncompleteRecords(limit = 50) {
+  return await db("businesses")
+    .whereNull("fullAddress")
+    .orWhere("website", "")
+    .limit(limit);
+}
+async function updateRecord(id, data) {
+  return await db("businesses").where({ id }).update(data);
+}
 
 
 module.exports = {
@@ -202,4 +211,6 @@ module.exports = {
   runScrapper,
   shouldRunScrapper,
   resetScrapperFlag,
+  getIncompleteRecords,
+  updateRecord,
 };

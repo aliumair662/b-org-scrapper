@@ -187,17 +187,17 @@ async function scrapeCategory(listPage, cat, country, detailPage) {
 
       console.debug(`🔗 Scraping detail page (${i + 1}/${rows.length}): ${row.link}`);
 
-      try {
-        const extra = await scrapeBusinessDetails(detailPage, row.link);
-        Object.assign(row, extra);
-        row.category = cat;
-        row.country = country;
-      } catch (err) {
-        console.error(`❌ Error scraping detail page: ${row.link}`, err);
-      }
+    //   try {
+    //     const extra = await scrapeBusinessDetails(detailPage, row.link);
+    //     Object.assign(row, extra);
+    //     row.category = cat;
+    //     row.country = country;
+    //   } catch (err) {
+    //     console.error(`❌ Error scraping detail page: ${row.link}`, err);
+    //   }
 
-      await delay(800);
-    }
+    //   await delay(800);
+    // }
 
     all.push(...rows);
     await insertData(rows);
