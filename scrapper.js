@@ -18,7 +18,7 @@ process.on("uncaughtException", (err) => {
 });
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-const { insertData, testConnection, getAllData } = require("./db");
+const { insertData, testConnection, getAllData,shouldRunScrapper,resetScrapperFlag } = require("./db");
 /* ‑‑‑‑‑‑‑‑‑‑‑‑  YOUR CATEGORY LIST  ‑‑‑‑‑‑‑‑‑‑‑‑ */
 //testConnection();
 
@@ -286,6 +286,11 @@ async function scrapeBusinessDetails(detailPage, url) {
 
 /* ‑‑‑‑‑‑‑‑‑‑‑‑  BATCH endpoint  ‑‑‑‑‑‑‑‑‑‑‑‑ */
 async function runBatchScrape() {
+  const shouldRun = await shouldRunScrapper();
+  if (!shouldRun) {
+    console.log("⏹ Scrapper run flag is false. Not starting scraping.");
+    return;
+  }
   console.log("[scrape] starting…");
   const browser = await puppeteer
     .launch({
@@ -334,6 +339,7 @@ async function runBatchScrape() {
   }
   await browser.close();
   console.log("[scrape] finished");
+  await resetScrapperFlag();
 }
 
 /* start server */

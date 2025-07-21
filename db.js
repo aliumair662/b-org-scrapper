@@ -13,13 +13,23 @@ async function insertData(data) {
     await client.db().admin().ping();
     const db = client.db("bbb_scrape");
     const collection = db.collection("businesses");
-    await collection.insertMany(data, { ordered: false });
+
+    const operations = data.map(item => ({
+      updateOne: {
+        filter: { link: item.link }, // Use a unique identifier like 'link' or 'name'
+        update: { $set: item },
+        upsert: true
+      }
+    }));
+
+    await collection.bulkWrite(operations, { ordered: false });
   } catch (err) {
-    // Error is caught silently
+    console.error("❌ DB insert/update error:", err);
   } finally {
     await client.close();
   }
 }
+
 
 async function runScrapper() {
   try {
@@ -147,6 +157,42 @@ async function testConnection() {
     // Error is caught silently
   }
 }
+async function shouldRunScrapper() {
+  try {
+    await client.connect();
+    const db = client.db("bbb_scrape");
+    const collection = db.collection("settings");
+
+    const setting = await collection.findOne();
+    return setting?.scrapper_run === true;
+  } catch (err) {
+    console.error("[shouldRunScrapper] Error:", err);
+    return false;
+  } finally {
+    await client.close();
+  }
+}
+async function resetScrapperFlag() {
+  try {
+    await client.connect();
+    const db = client.db("bbb_scrape");
+    const collection = db.collection("settings");
+
+    await collection.updateOne({}, {
+      $set: {
+        scrapper_run: false,
+        scrapper_running: false,
+        updatedAt: new Date()
+      }
+    });
+    console.log("✅ Scrapper flags reset in DB.");
+  } catch (err) {
+    console.error("[resetScrapperFlag] Error:", err);
+  } finally {
+    await client.close();
+  }
+}
+
 
 module.exports = {
   insertData,
@@ -154,4 +200,6 @@ module.exports = {
   getAllData,
   getNears,
   runScrapper,
+  shouldRunScrapper,
+  resetScrapperFlag,
 };
