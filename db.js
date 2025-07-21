@@ -192,14 +192,34 @@ async function resetScrapperFlag() {
     await client.close();
   }
 }
+
 async function getIncompleteRecords(limit = 50) {
-  return await db("businesses")
-    .whereNull("fullAddress")
-    .orWhere("website", "")
-    .limit(limit);
+  await client.connect();
+  const db = client.db("bbb_scrape");
+  const collection = db.collection("businesses");
+
+  return await collection
+    .find({
+      $or: [
+        { fullAddress: { $exists: false } },
+        { fullAddress: "" },
+        { website: { $exists: false } },
+        { website: "" },
+      ],
+    })
+    .limit(limit)
+    .toArray();
 }
+
 async function updateRecord(id, data) {
-  return await db("businesses").where({ id }).update(data);
+  await client.connect();
+  const db = client.db("bbb_scrape");
+  const collection = db.collection("businesses");
+
+  return await collection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: data }
+  );
 }
 
 
