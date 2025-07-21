@@ -222,10 +222,10 @@ async function scrapeBusinessDetails(detailPage, url) {
   console.debug(`🌐 Visiting business detail page: ${url}`);
 
   try {
-    await detailPage.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+    await detailPage.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 });
     console.debug("✅ Detail page loaded");
 
-    await detailPage.waitForSelector("h1", { timeout: 20000 }).catch(() => {
+    await detailPage.waitForSelector("h1", { timeout: 90000 }).catch(() => {
       console.warn("⚠️ 'h1' not found on detail page");
     });
     
@@ -362,7 +362,7 @@ async function runBatchScrape() {
   await detailPage.setExtraHTTPHeaders({
     "Accept-Language": "en-US,en;q=0.9",
   });
-  
+
   for (const country of COUNTRIES) {
     console.log(`[scrape] country ${country}`);
     // let regionRows = [];
