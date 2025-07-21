@@ -41,14 +41,14 @@ app.post("/batch-scrape", async (_, res) => {
     try {
       const data = await runScrapper();
   
-      // Clear console buffer
+      // Clear console buffer (optional)
       process.stdout.write('\x1Bc');
   
-      // Run the scraper.js file
+      // Run the scraper in the background, without blocking the response
       exec("node scrapper.js", (error, stdout, stderr) => {
         if (error) {
           console.error(`❌ Scraper Error: ${error.message}`);
-          return res.status(500).json({ error: error.message });
+          return;
         }
   
         if (stderr) {
@@ -56,13 +56,12 @@ app.post("/batch-scrape", async (_, res) => {
         }
   
         console.log(`✅ Scraper Output:\n${stdout}`);
+      });
   
-        // Send final response after scraper completes
-        res.json({
-          message: "Scraper ran successfully",
-          runScrapperData: data,
-          output: stdout.trim()
-        });
+      // Respond to client immediately
+      res.json({
+        message: "Scraper started in background",
+        runScrapperData: data
       });
   
     } catch (err) {
