@@ -2,10 +2,12 @@
 
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-puppeteer.use(StealthPlugin());
+
+
  // or "puppeteer" if you're not using puppeteer-core
 const { getIncompleteRecords, updateRecord } = require("./db"); // You'll need to implement these
 const fs = require("fs");
+puppeteer.use(StealthPlugin());
 
 async function scrapeBusinessDetails(detailPage, url) {
   console.debug(`🌐 Visiting detail page: ${url}`);
@@ -81,7 +83,10 @@ async function scrapeBusinessDetails(detailPage, url) {
 }
 
 async function scrapeAllDetailsFromDB() {
-  const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      });
   const page = await browser.newPage();
 
   await page.setUserAgent(
