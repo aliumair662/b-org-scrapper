@@ -30,7 +30,7 @@ async function scrapeEmailFromWebsite(url) {
     }
   }
 
-async function updateEmails() {
+  async function updateEmails() {
     try {
       await client.connect();
       const db = client.db("bbb_scrape");
@@ -48,28 +48,45 @@ async function updateEmails() {
   
       while (await cursor.hasNext()) {
         const doc = await cursor.next();
-        const email = await scrapeEmailFromWebsite(doc.website);
+        try {
+          const email = await scrapeEmailFromWebsite(doc.website);
   
-        if (email) {
           const update = {
             $set: {
-              email: email,
-              websiteEmail: email
+              email: email || "Not Available",
+              websiteEmail: email || "Not Available"
             }
           };
   
           await collection.updateOne({ _id: doc._id }, update);
-          console.log(`✅ Updated: ${doc.name} (${doc._id}) with email: ${email}`);
-        } else {
-          console.log(`⚠️  No email found for ${doc.name} (${doc._id})`);
+  
+          if (email) {
+            console.log(`✅ Updated: ${doc.name} (${doc._id}) with email: ${email}`);
+          } else {
+            console.log(`⚠️ No email found for ${doc.name} (${doc._id}), set as 'Not Available'`);
+          }
+        } catch (err) {
+          console.error(`❌ Error scraping email for ${doc.name} (${doc._id})`, err);
+  
+          // Still update the entry to mark it as processed
+          await collection.updateOne(
+            { _id: doc._id },
+            {
+              $set: {
+                email: "Not Available",
+                websiteEmail: "Not Available"
+              }
+            }
+          );
         }
       }
     } catch (err) {
-      console.error('❌ Error during update:', err);
+      console.error("❌ Error during updateEmails process:", err);
     } finally {
       await client.close();
     }
   }
+  
   
 
   updateEmails();
