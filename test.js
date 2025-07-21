@@ -1,25 +1,31 @@
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+
+puppeteer.use(StealthPlugin());
 
 (async () => {
-  const url = "https://www.bbb.org/us/oh/columbus/profile/home-improvement/mdg-contractors-group-0302-70129939";
-
   const browser = await puppeteer.launch({
-    headless: "new", // or true
+    headless: "new",
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   const page = await browser.newPage();
 
-  try {
-    console.log("🔗 Visiting URL...");
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+  );
 
-    console.log("📸 Taking screenshot...");
-    await page.screenshot({ path: "screenshot.png", fullPage: true });
-    console.log("✅ Screenshot saved as 'screenshot.png'");
-  } catch (err) {
-    console.error("❌ Error visiting or capturing:", err);
-  } finally {
-    await browser.close();
-  }
+  await page.setExtraHTTPHeaders({
+    "Accept-Language": "en-US,en;q=0.9",
+  });
+
+  const url = "https://www.bbb.org/us/oh/columbus/profile/home-improvement/mdg-contractors-group-0302-70129939";
+
+  console.log("🔗 Visiting URL...");
+  await page.goto(url, { waitUntil: "networkidle2", timeout: 90000 });
+
+  console.log("📸 Taking screenshot...");
+  await page.screenshot({ path: "screenshot.png", fullPage: true });
+
+  await browser.close();
 })();

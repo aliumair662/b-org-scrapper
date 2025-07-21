@@ -226,6 +226,7 @@ async function scrapeBusinessDetails(detailPage, url) {
     await detailPage.waitForSelector("h1", { timeout: 20000 }).catch(() => {
       console.warn("⚠️ 'h1' not found on detail page");
     });
+    
 
     const data = await detailPage.evaluate(() => {
       const $ = (sel) => document.querySelector(sel);
