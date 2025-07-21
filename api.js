@@ -40,25 +40,34 @@ app.post("/batch-scrape", async (_, res) => {
   app.post("/api/run-scrapper", async (req, res) => {
     try {
       const data = await runScrapper();
-     
+  
+      // Clear console buffer
       process.stdout.write('\x1Bc');
-      // Run the scraper script in the background
-    exec("node scrapper.js", (error, stdout, stderr) => {
-      if (error) {
-        console.error(`❌ Scraper Error: ${error.message}`);
-        return;
-      }
-
-      if (stderr) {
-        console.warn(`⚠️ Scraper Warning: ${stderr}`);
-      }
-
-      console.log(`✅ Scraper Output:\n${stdout}`);
-    });
-    res.json(data);
-
+  
+      // Run the scraper.js file
+      exec("node scrapper.js", (error, stdout, stderr) => {
+        if (error) {
+          console.error(`❌ Scraper Error: ${error.message}`);
+          return res.status(500).json({ error: error.message });
+        }
+  
+        if (stderr) {
+          console.warn(`⚠️ Scraper Warning: ${stderr}`);
+        }
+  
+        console.log(`✅ Scraper Output:\n${stdout}`);
+  
+        // Send final response after scraper completes
+        res.json({
+          message: "Scraper ran successfully",
+          runScrapperData: data,
+          output: stdout.trim()
+        });
+      });
+  
     } catch (err) {
-      res.status(500).json({ error: err });
+      console.error("❌ API Error:", err);
+      res.status(500).json({ error: err.message || err });
     }
   });
   
