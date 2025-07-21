@@ -166,122 +166,157 @@ try {
 /* FULL scrape for one category (walks next‑page links) */
 async function scrapeCategory(listPage, cat, country, detailPage) {
   let all = [];
-  let url = `https://www.bbb.org/search?find_text=${encodeURIComponent(
-    cat
-  )}&find_loc=&find_country=${country}`;
+  let url = `https://www.bbb.org/search?find_text=${encodeURIComponent(cat)}&find_loc=&find_country=${country}`;
   let pageNo = 1;
 
+  console.log(`🔍 Starting scrape for category "${cat}" in ${country}`);
+
   while (url) {
+    console.log(`➡ Scraping page ${pageNo}: ${url}`);
+
     const rows = await scrapeOnePage(listPage, url);
-    // After scraping one search-result page:
-    // for (const row of rows) {
-    //   if (!row.link) continue;
-    //   const extra = await scrapeBusinessDetails(detailPage, row.link);
-    //   Object.assign(row, extra);
-    //   row.category = cat;
-    //   row.country = country;
-    //   await delay(800);
-    // }
+    console.log(`📦 Found ${rows.length} listings on page ${pageNo}`);
+
+    for (const [i, row] of rows.entries()) {
+      if (!row.link) {
+        console.warn(`⚠️ Skipping row ${i} — no link`);
+        continue;
+      }
+
+      console.debug(`🔗 Scraping detail page (${i + 1}/${rows.length}): ${row.link}`);
+
+      try {
+        const extra = await scrapeBusinessDetails(detailPage, row.link);
+        Object.assign(row, extra);
+        row.category = cat;
+        row.country = country;
+      } catch (err) {
+        console.error(`❌ Error scraping detail page: ${row.link}`, err);
+      }
+
+      await delay(800);
+    }
 
     all.push(...rows);
-
     await insertData(rows);
+    console.log(`✅ Page ${pageNo} processed and inserted.`);
 
     const next = await listPage
       .$eval('nav[aria-label="pagination"] a[rel="next"]', (a) => a?.href)
       .catch(() => null);
+
     url = next || null;
     pageNo++;
   }
+
+  console.log(`🏁 Finished scraping "${cat}" in ${country}. Total records: ${all.length}`);
   return all;
 }
+
 
 /* --------------  Scrape Business Detail Page  -------------- */
 
 async function scrapeBusinessDetails(detailPage, url) {
-  await detailPage.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+  console.debug(`🌐 Visiting business detail page: ${url}`);
 
-  // Wait for key selector
-  await detailPage.waitForSelector("h1", { timeout: 20000 }).catch(() => {});
+  try {
+    await detailPage.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+    console.debug("✅ Detail page loaded");
 
-  const data = await detailPage.evaluate(() => {
-    const $ = (sel) => document.querySelector(sel);
-    const $$ = (sel) =>
-      Array.from(document.querySelectorAll(sel)).filter(Boolean);
-    const text = (sel) => $(sel)?.textContent.trim() || "";
-
-    const phoneLinks = $$('a[href^="tel:"]')
-      .map((a) => a.textContent.trim())
-      .filter((v, i, arr) => v && arr.indexOf(v) === i); // dedupe
-
-    const phoneFields = {};
-    phoneLinks.forEach((num, idx) => {
-      phoneFields[`phone${idx + 1}`] = num;
+    await detailPage.waitForSelector("h1", { timeout: 20000 }).catch(() => {
+      console.warn("⚠️ 'h1' not found on detail page");
     });
 
-    const websiteLink =
-      document.querySelector(".bpr-header-contact a[href^='http']")?.href ||
-      $("a[data-js='business-website']")?.href ||
-      "";
+    const data = await detailPage.evaluate(() => {
+      const $ = (sel) => document.querySelector(sel);
+      const $$ = (sel) => Array.from(document.querySelectorAll(sel)).filter(Boolean);
+      const text = (sel) => $(sel)?.textContent.trim() || "";
 
-    const fullAddress =
-      document.querySelector(".bpr-overview-address")?.textContent.trim() || "";
+      const phoneLinks = $$('a[href^="tel:"]')
+        .map((a) => a.textContent.trim())
+        .filter((v, i, arr) => v && arr.indexOf(v) === i); // dedupe
 
-    const ownerKeys = [
-      "Business Management",
-      "Principal Contacts",
-      "Customer Contacts",
-      "Owner",
-      "Owner & LLC Managing Member",
-    ];
-    const ownerInfo = {};
-    const dtElements = Array.from(document.querySelectorAll(".bpr-details dt"));
-    dtElements.forEach((dt) => {
-      const label = dt.textContent.trim();
-      if (ownerKeys.some((key) => label.includes(key))) {
-        const ddElements = [];
-        let el = dt.nextElementSibling;
-        while (el && el.tagName === "DD") {
-          ddElements.push(el.textContent.trim());
-          el = el.nextElementSibling;
+      const phoneFields = {};
+      phoneLinks.forEach((num, idx) => {
+        phoneFields[`phone${idx + 1}`] = num;
+      });
+
+      const websiteLink =
+        document.querySelector(".bpr-header-contact a[href^='http']")?.href ||
+        $("a[data-js='business-website']")?.href ||
+        "";
+
+      const fullAddress = document.querySelector(".bpr-overview-address")?.textContent.trim() || "";
+
+      const ownerKeys = [
+        "Business Management",
+        "Principal Contacts",
+        "Customer Contacts",
+        "Owner",
+        "Owner & LLC Managing Member",
+      ];
+
+      const ownerInfo = {};
+      const dtElements = Array.from(document.querySelectorAll(".bpr-details dt"));
+      dtElements.forEach((dt) => {
+        const label = dt.textContent.trim();
+        if (ownerKeys.some((key) => label.includes(key))) {
+          const ddElements = [];
+          let el = dt.nextElementSibling;
+          while (el && el.tagName === "DD") {
+            ddElements.push(el.textContent.trim());
+            el = el.nextElementSibling;
+          }
+          ownerInfo[label] = ddElements.join("; ");
         }
-        ownerInfo[label] = ddElements.join("; ");
-      }
+      });
+
+      return {
+        fullAddress,
+        website: websiteLink,
+        ...phoneFields,
+        ...ownerInfo,
+      };
     });
+
+    console.debug("📥 Extracted detail page data:", data);
+
+    // Placeholder for optional email scraping
+    let websiteEmail = "";
+    // if (data.website) {
+    //   try {
+    //     const response = await fetch(data.website, { timeout: 15000 });
+    //     const body = await response.text();
+    //     const match = body.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/);
+    //     if (match) websiteEmail = match[0];
+    //   } catch (err) {
+    //     console.error("❌ Error fetching email from website", err);
+    //   }
+    // }
 
     return {
-      fullAddress,
-      website: websiteLink,
-      ...phoneFields,
-      ...ownerInfo,
+      ...data,
+      email: websiteEmail,
+      websiteEmail,
     };
-  });
+  } catch (err) {
+    console.error(`❌ scrapeBusinessDetails failed for ${url}`, err);
 
-  // 🔍 Fetch email from website (server-side)
-  let websiteEmail = "";
-  if (data.website) {
-    // try {
-     
-    //   const response = await fetch(data.website, { timeout: 15000 });
-    //   const body = await response.text();
+    // Optional: Take screenshot of failing page
+    try {
+      await detailPage.screenshot({
+        path: `error-screenshot-${Date.now()}.png`,
+        fullPage: true,
+      });
+      console.warn("📸 Saved screenshot of failing detail page.");
+    } catch (screenshotErr) {
+      console.error("❌ Failed to take error screenshot", screenshotErr);
+    }
 
-    //   const match = body.match(
-    //     /([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/
-    //   );
-    //   if (match) {
-    //     websiteEmail = match[0];
-    //   }
-    // } catch (err) {
-    //   console.error("❌ Error fetching website email:", err);
-    // }
+    throw err;
   }
-
-  return {
-    ...data,
-    email: websiteEmail,
-    websiteEmail,
-  };
 }
+
 
 
 /* ‑‑‑‑‑‑‑‑‑‑‑‑  BATCH endpoint  ‑‑‑‑‑‑‑‑‑‑‑‑ */
