@@ -30,7 +30,7 @@ async function scrapeEmailFromWebsite(url) {
     }
   }
 
-  async function updateEmails() {
+  async function updateEmails(limit = 50) {
     try {
       await client.connect();
       const db = client.db("bbb_scrape");
@@ -44,7 +44,9 @@ async function scrapeEmailFromWebsite(url) {
           { websiteEmail: { $exists: false } },
           { websiteEmail: '' }
         ]
-      });
+      }).limit(limit);
+  
+      let count = 0;
   
       while (await cursor.hasNext()) {
         const doc = await cursor.next();
@@ -68,7 +70,7 @@ async function scrapeEmailFromWebsite(url) {
         } catch (err) {
           console.error(`❌ Error scraping email for ${doc.name} (${doc._id})`, err);
   
-          // Still update the entry to mark it as processed
+          // Still mark as processed to avoid retrying same broken link
           await collection.updateOne(
             { _id: doc._id },
             {
@@ -79,13 +81,18 @@ async function scrapeEmailFromWebsite(url) {
             }
           );
         }
+  
+        count++;
       }
+  
+      console.log(`🏁 Done — processed ${count} email updates.`);
     } catch (err) {
       console.error("❌ Error during updateEmails process:", err);
     } finally {
       await client.close();
     }
   }
+  
   
   
 
