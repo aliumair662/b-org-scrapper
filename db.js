@@ -211,16 +211,6 @@ async function getIncompleteRecords(limit = 50) {
     .toArray();
 }
 
-async function updateRecord(id, data) {
-  await client.connect();
-  const db = client.db("bbb_scrape");
-  const collection = db.collection("businesses");
-
-  return await collection.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: data }
-  );
-}
 
 
 module.exports = {
@@ -232,5 +222,4 @@ module.exports = {
   shouldRunScrapper,
   resetScrapperFlag,
   getIncompleteRecords,
-  updateRecord,
 };

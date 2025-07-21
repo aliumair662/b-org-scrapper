@@ -5,7 +5,7 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
 
  // or "puppeteer" if you're not using puppeteer-core
-const { getIncompleteRecords, updateRecord } = require("./db"); // You'll need to implement these
+const { getIncompleteRecords, insertData } = require("./db"); // You'll need to implement these
 const fs = require("fs");
 puppeteer.use(StealthPlugin());
 
