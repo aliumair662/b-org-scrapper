@@ -24,11 +24,10 @@ async function resetCollection() {
     };
 
       const existingDoc = await settings.findOne();
-  
       if (!existingDoc) {
-        await collection.insertOne(payload);
+        await settings.insertOne(payload);
       } else {
-        await collection.updateOne({ _id: existingDoc._id }, { $set: payload });
+        await settings.updateOne({ _id: existingDoc._id }, { $set: payload });
       }
 
     console.log("⚙️ Updated scraper flags in 'settings' collection.");
