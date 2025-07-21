@@ -84,37 +84,46 @@ async function scrapeBusinessDetails(detailPage, url) {
 
 async function scrapeAllDetailsFromDB() {
     const browser = await puppeteer.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      });
-  const page = await browser.newPage();
-
-  await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
-  );
-  await page.setExtraHTTPHeaders({
-    "Accept-Language": "en-US,en;q=0.9",
-  });
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
   
-
-  const records = await getIncompleteRecords(); // e.g., SELECT * WHERE fullAddress IS NULL
-  console.log(`🔍 Found ${records.length} records to update`);
-
-  for (const [i, record] of records.entries()) {
-    console.log(`🔗 (${i + 1}/${records.length}) ${record.link}`);
-    const detailData = await scrapeBusinessDetails(page, record.link);
-    if (detailData) {
-      await updateRecord(record.id, detailData);
-      console.log(`✅ Updated record ${record.id}`);
-    } else {
-      console.warn(`⚠️ Failed to update record ${record.id}`);
+    const page = await browser.newPage();
+  
+    await page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+    );
+    await page.setExtraHTTPHeaders({
+      "Accept-Language": "en-US,en;q=0.9",
+    });
+  
+    const records = await getIncompleteRecords();
+    console.log(`🔍 Found ${records.length} records to update`);
+  
+    for (const [i, record] of records.entries()) {
+      console.log(`🔗 (${i + 1}/${records.length}) Visiting: ${record.link}`);
+  
+      try {
+        const detailData = await scrapeBusinessDetails(page, record.link);
+  
+        if (detailData) {
+          // Combine original record + new detail fields
+          const updatedRecord = { ...record, ...detailData };
+          await insertData(updatedRecord);
+          console.log(`✅ Upserted record: ${record.link}`);
+        } else {
+          console.warn(`⚠️ No detail data for: ${record.link}`);
+        }
+      } catch (err) {
+        console.error(`❌ Failed scraping/updating ${record.link}`, err);
+      }
+  
+      await new Promise((r) => setTimeout(r, 1000)); // delay to avoid bans
     }
-
-    await new Promise((r) => setTimeout(r, 1000)); // avoid bans
+  
+    await browser.close();
+    console.log("🏁 Done processing all records.");
   }
-
-  await browser.close();
-  console.log("🏁 Done processing all records.");
-}
+  
 
 scrapeAllDetailsFromDB();
