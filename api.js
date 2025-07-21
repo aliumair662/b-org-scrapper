@@ -1,6 +1,7 @@
 /* index.js ─ start with:  node index.js  */
 const express = require("express");
 const cors = require("cors");
+const { exec } = require("child_process");
 
 require('dotenv').config();
 //const {runBatchScrape} =require("../scraper/index");
@@ -39,7 +40,23 @@ app.post("/batch-scrape", async (_, res) => {
   app.post("/api/run-scrapper", async (req, res) => {
     try {
       const data = await runScrapper();
-      res.json(data);
+     
+      process.stdout.write('\x1Bc');
+      // Run the scraper script in the background
+    exec("node scraper.js", (error, stdout, stderr) => {
+      if (error) {
+        console.error(`❌ Scraper Error: ${error.message}`);
+        return;
+      }
+
+      if (stderr) {
+        console.warn(`⚠️ Scraper Warning: ${stderr}`);
+      }
+
+      console.log(`✅ Scraper Output:\n${stdout}`);
+    });
+    res.json(data);
+
     } catch (err) {
       res.status(500).json({ error: err });
     }
