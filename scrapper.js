@@ -260,20 +260,20 @@ async function scrapeBusinessDetails(detailPage, url) {
   // 🔍 Fetch email from website (server-side)
   let websiteEmail = "";
   if (data.website) {
-    try {
+    // try {
      
-      const response = await fetch(data.website, { timeout: 15000 });
-      const body = await response.text();
+    //   const response = await fetch(data.website, { timeout: 15000 });
+    //   const body = await response.text();
 
-      const match = body.match(
-        /([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/
-      );
-      if (match) {
-        websiteEmail = match[0];
-      }
-    } catch (err) {
-      console.error("❌ Error fetching website email:", err);
-    }
+    //   const match = body.match(
+    //     /([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/
+    //   );
+    //   if (match) {
+    //     websiteEmail = match[0];
+    //   }
+    // } catch (err) {
+    //   console.error("❌ Error fetching website email:", err);
+    // }
   }
 
   return {
