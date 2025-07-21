@@ -179,13 +179,13 @@ async function scrapeCategory(listPage, cat, country, detailPage) {
     const rows = await scrapeOnePage(listPage, url);
     console.log(`📦 Found ${rows.length} listings on page ${pageNo}`);
 
-    for (const [i, row] of rows.entries()) {
-      if (!row.link) {
-        console.warn(`⚠️ Skipping row ${i} — no link`);
-        continue;
-      }
+    // for (const [i, row] of rows.entries()) {
+    //   if (!row.link) {
+    //     console.warn(`⚠️ Skipping row ${i} — no link`);
+    //     continue;
+    //   }
 
-      console.debug(`🔗 Scraping detail page (${i + 1}/${rows.length}): ${row.link}`);
+    //   console.debug(`🔗 Scraping detail page (${i + 1}/${rows.length}): ${row.link}`);
 
     //   try {
     //     const extra = await scrapeBusinessDetails(detailPage, row.link);
@@ -197,7 +197,7 @@ async function scrapeCategory(listPage, cat, country, detailPage) {
     //   }
 
     //   await delay(800);
-    // }
+    //  }
 
     all.push(...rows);
     await insertData(rows);
@@ -390,9 +390,5 @@ async function runBatchScrape() {
 }
 
 /* start server */
-app.listen(3001, () => {
-  console.log("scrapper is running");
-  runBatchScrape().catch((err) => {
-    console.error("[scrape] top‑level error:", err);
-  });
-});
+runBatchScrape();
+
