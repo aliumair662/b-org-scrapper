@@ -19,7 +19,7 @@ puppeteer.use(StealthPlugin());
     "Accept-Language": "en-US,en;q=0.9",
   });
 
-  const url = "https://www.bbb.org/us/oh/columbus/profile/home-improvement/mdg-contractors-group-0302-70129939";
+  const url = "https://www.bbb.org/us/tx/frisco/profile/general-contractor/mtr-contractors-inc-0875-90464752";
 
   console.log("🔗 Visiting URL...");
   await page.goto(url, { waitUntil: "networkidle2", timeout: 90000 });
