@@ -43,7 +43,7 @@ app.post("/batch-scrape", async (_, res) => {
      
       process.stdout.write('\x1Bc');
       // Run the scraper script in the background
-    exec("node scraper.js", (error, stdout, stderr) => {
+    exec("node scrapper.js", (error, stdout, stderr) => {
       if (error) {
         console.error(`❌ Scraper Error: ${error.message}`);
         return;
