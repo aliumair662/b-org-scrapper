@@ -252,9 +252,13 @@
             >
               Scrape Inprogress...
             </button>
-            <button class="btn custom-btn export d-none" id="start-scraping" disabled>
+            <button
+              class="btn custom-btn export d-none"
+              id="start-scraping"
+              disabled
+            >
               Scrape again
-            </button >
+            </button>
 
             <button class="btn custom-btn export" id="exportBtn">
               Export to Excel <i class="bi bi-file-earmark-arrow-up"></i>
@@ -263,6 +267,8 @@
         </div>
       </div>
     </div>
+
+    
     <div class="container-fluid table-wrapper">
       <div class="table-responsive">
         <table class="table custom-table">
@@ -286,7 +292,7 @@
           </thead>
           <tbody id="businessTableBody">
             <tr>
-              <td colspan="12">Loading data...</td>
+              <td colspan="12"></td>
             </tr>
           </tbody>
         </table>
@@ -295,17 +301,75 @@
         <ul class="pagination justify-content-end" id="pagination"></ul>
       </nav>
     </div>
+    <div class="show-data"></div>
+    <div class="loader d-none">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <circle
+          fill="#0E72AB"
+          stroke="#0E72AB"
+          stroke-width="15"
+          r="15"
+          cx="40"
+          cy="65"
+        >
+          <animate
+            attributeName="cy"
+            calcMode="spline"
+            dur="2"
+            values="65;135;65;"
+            keySplines=".5 0 .5 1;.5 0 .5 1"
+            repeatCount="indefinite"
+            begin="-.4"
+          ></animate>
+        </circle>
+        <circle
+          fill="#0E72AB"
+          stroke="#0E72AB"
+          stroke-width="15"
+          r="15"
+          cx="100"
+          cy="65"
+        >
+          <animate
+            attributeName="cy"
+            calcMode="spline"
+            dur="2"
+            values="65;135;65;"
+            keySplines=".5 0 .5 1;.5 0 .5 1"
+            repeatCount="indefinite"
+            begin="-.2"
+          ></animate>
+        </circle>
+        <circle
+          fill="#0E72AB"
+          stroke="#0E72AB"
+          stroke-width="15"
+          r="15"
+          cx="160"
+          cy="65"
+        >
+          <animate
+            attributeName="cy"
+            calcMode="spline"
+            dur="2"
+            values="65;135;65;"
+            keySplines=".5 0 .5 1;.5 0 .5 1"
+            repeatCount="indefinite"
+            begin="0"
+          ></animate>
+        </circle>
+      </svg>
+    </div>
   </body>
 
   <script>
-
-// config.js or directly in your script
-const API_BASE_URL = window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:3000'
-  : 'http://74.208.99.105:3000';
-
-
-
+    let selectedCategory;
+   
+    // config.js or directly in your script
+    const API_BASE_URL =
+      window.location.hostname === "127.0.0.1"
+        ? "http://localhost:3000"
+        : "http://74.208.99.105:3000";
 
     const recordsPerPage = 10;
     let currentPage = 1;
@@ -482,12 +546,23 @@ const API_BASE_URL = window.location.hostname === '127.0.0.1'
     };
     let originalBusinesses = [];
     async function loadBusinesses(search = "", near = "", country = "") {
+      const loader = document.querySelector(".loader");
+      loader.classList.remove("d-none");
       try {
         const res = await fetch(
           `${API_BASE_URL}/api/businesses?q=${search}&near=${near}&country=${country}`
         );
+
         const response = await res.json();
+
+        document.querySelector(
+          ".show-data"
+        ).innerHTML = `<p>showing <b>${response.results.length}</b> results for <b> ${selectedCategory ? selectedCategory:  'all categories'}</b>  </p>`;
+
+
+        console.log("search input", searchInput.value)
         window.settings = response.settings;
+
         handleScrappeButton();
         businesses = response.results;
         originalBusinesses = [...businesses];
@@ -496,6 +571,7 @@ const API_BASE_URL = window.location.hostname === '127.0.0.1'
           document.getElementById(
             "businessTableBody"
           ).innerHTML = `<tr><td colspan="12">No data found.</td></tr>`;
+
           return;
         }
 
@@ -506,6 +582,8 @@ const API_BASE_URL = window.location.hostname === '127.0.0.1'
           "businessTableBody"
         ).innerHTML = `<tr><td colspan="12">Error loading data</td></tr>`;
         console.error("Failed to load data:", err);
+      } finally {
+        loader.classList.add("d-none");
       }
     }
     window.onload = loadBusinesses;
@@ -644,6 +722,7 @@ const API_BASE_URL = window.location.hostname === '127.0.0.1'
         if (item.textContent.toLowerCase().includes(value)) {
           item.style.display = "flex";
           visible++;
+          selectedCategory=item;
         } else {
           item.style.display = "none";
         }
@@ -658,6 +737,7 @@ const API_BASE_URL = window.location.hostname === '127.0.0.1'
         dropdown.classList.remove("active");
         toggleClearIcon(searchInput, "searchClearIcon");
         searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+        selectedCategory=searchInput.value;
       });
     });
     document.addEventListener("click", (e) => {
@@ -726,10 +806,7 @@ const API_BASE_URL = window.location.hostname === '127.0.0.1'
           .innerText.trim();
         const nearValue = document.getElementById("nearInput").value.trim();
         const res = await fetch(
-          `${API_BASE_URL}/api/nears?country=` +
-            country +
-            "&q=" +
-            nearValue
+          `${API_BASE_URL}/api/nears?country=` + country + "&q=" + nearValue
         );
         nears = await res.json();
         return nears;
@@ -798,7 +875,7 @@ const API_BASE_URL = window.location.hostname === '127.0.0.1'
         scrapeBtn.classList.add("d-none");
         const scrapeInprogress = document.querySelector("#scrape-inprogress");
         //scrapeInprogress.classList.remove("d-none");
-        console.log('scrapper is running');
+        console.log("scrapper is running");
       } catch (error) {
         console.log("Error activating scrapper: ", error);
       }

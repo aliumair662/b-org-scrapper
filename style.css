@@ -282,3 +282,12 @@ input[type="checkbox"] {
 .page-link {
   color: #0e72ab !important;
 }
+
+.loader{
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: auto;
+  transform: translate(-59%, -50%);
+}
