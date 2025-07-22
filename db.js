@@ -78,19 +78,19 @@ async function getAllData(req) {
       match.country = country;
     }
 
-    if (near) {
-      const parts = near.split(",").map((s) => s.trim());
+    // if (near) {
+    //   const parts = near.split(",").map((s) => s.trim());
 
-      if (parts.length === 2) {
-        match.state = { $regex: new RegExp(`^${parts[0]}`, "i") };
-        match.city = { $regex: new RegExp(`^${parts[1]}`, "i") };
-      } else if (parts.length === 1 && parts[0] !== "") {
-        const regex = new RegExp(parts[0], "i");
-        match.$or = [{ state: { $regex: regex } }, { city: { $regex: regex } }];
-      }
-    }
+    //   if (parts.length === 2) {
+    //     match.state = { $regex: new RegExp(`^${parts[0]}`, "i") };
+    //     match.city = { $regex: new RegExp(`^${parts[1]}`, "i") };
+    //   } else if (parts.length === 1 && parts[0] !== "") {
+    //     const regex = new RegExp(parts[0], "i");
+    //     match.$or = [{ state: { $regex: regex } }, { city: { $regex: regex } }];
+    //   }
+    // }
 
-    const results = await collection.find(match).limit(1000).toArray();
+    const results = await collection.find(match).toArray();
 
     return { results, settings };
   } catch (err) {

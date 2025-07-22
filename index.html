@@ -268,7 +268,6 @@
       </div>
     </div>
 
-    
     <div class="container-fluid table-wrapper">
       <div class="table-responsive">
         <table class="table custom-table">
@@ -363,8 +362,10 @@
   </body>
 
   <script>
-    let selectedCategory;
-   
+    let selectedCategory = "";
+    let selectedNearVal = "";
+    let selectedCountryText = "";
+
     // config.js or directly in your script
     const API_BASE_URL =
       window.location.hostname === "127.0.0.1"
@@ -555,12 +556,15 @@
 
         const response = await res.json();
 
-        document.querySelector(
-          ".show-data"
-        ).innerHTML = `<p>showing <b>${response.results.length}</b> results for <b> ${selectedCategory ? selectedCategory:  'all categories'}</b>  </p>`;
+        document.querySelector(".show-data").innerHTML = `<p>showing <b>${
+          response.results.length
+        }</b> results for<b> ${
+          selectedCategory ? selectedCategory : "all categories"
+        }`;
+        // <b> ${
+        //   selectedCategory ? selectedCategory : "all categories"
+        // }</b>  ${selectedNearVal ? `near <b>${selectedNearVal}</b> ` : ""}</p>`;
 
-
-        console.log("search input", searchInput.value)
         window.settings = response.settings;
 
         handleScrappeButton();
@@ -674,6 +678,9 @@
           .getElementById("selectedText")
           .innerText.trim();
         loadBusinesses(findValue, nearValue, selectedCountry);
+      if(!findValue){
+        selectedCategory="";
+      }
       });
 
     function renderFilteredData(data) {
@@ -722,7 +729,7 @@
         if (item.textContent.toLowerCase().includes(value)) {
           item.style.display = "flex";
           visible++;
-          selectedCategory=item;
+          selectedCategory = item;
         } else {
           item.style.display = "none";
         }
@@ -737,7 +744,7 @@
         dropdown.classList.remove("active");
         toggleClearIcon(searchInput, "searchClearIcon");
         searchInput.dispatchEvent(new Event("input", { bubbles: true }));
-        selectedCategory=searchInput.value;
+        selectedCategory = searchInput.value;
       });
     });
     document.addEventListener("click", (e) => {
@@ -757,6 +764,8 @@
       document.getElementById("selectedText").innerText = code;
       document.querySelector(".selected-flag").src =
         event.target.firstElementChild.src;
+
+      selectedCountryText = document.getElementById("selectedText").innerText;
 
       filterNearDropdown();
     }
@@ -790,6 +799,7 @@
         div.innerHTML = `<i class="bi bi-geo-alt-fill"></i> ${match}`;
         div.addEventListener("click", () => {
           nearInput.value = match;
+          selectedNearVal = nearInput.value;
           document
             .getElementById("nearDropdownMenu")
             .classList.remove("active");
@@ -841,6 +851,7 @@
     function clearInput(inputId, iconId) {
       document.getElementById(inputId).value = "";
       document.getElementById(iconId).classList.add("d-none");
+ 
 
       if (inputId === "searchInput") {
         filterDropdown();
