@@ -131,7 +131,7 @@
                 </div>
 
                 <div class="dropdown-menu" id="dropdownMenu">
-                  <div class="dropdown-header">Popular Categories</div>
+                  <div class="dropdown-header" id="popularHeader">Popular Categories</div>
                   <div class="dropdown-body" id="dropdownItems">
                     <div class="dropdown-item" data-value="Roofing Contractors">
                       <i class="bi bi-house"></i> Roofing Contractors
@@ -249,6 +249,7 @@
               class="btn custom-btn d-none"
               id="scrape-inprogress"
               disabled
+              style="display: none;"
             >
               Scrape Inprogress...
             </button>
@@ -256,11 +257,11 @@
               class="btn custom-btn export d-none"
               id="start-scraping"
               disabled
+              style="display: none;"
             >
               Scrape again
             </button>
-
-            <button class="btn custom-btn export" id="exportBtn">
+   <button class="btn custom-btn export" id="exportBtn">
               Export to Excel <i class="bi bi-file-earmark-arrow-up"></i>
             </button>
           </div>
@@ -280,6 +281,7 @@
               <th>Cell Phone</th>
               <th>Owner Name</th>
               <th>Manager Name</th>
+              <th>Business Categories</th>
               <th>Website</th>
               <th>Email Address</th>
               <th>Country</th>
@@ -375,6 +377,7 @@
     const recordsPerPage = 10;
     let currentPage = 1;
     let businesses = [];
+    let currentData = []; // 👈 this is the active dataset
 
     function parseLocation(raw = "") {
       raw = raw.trim();
@@ -417,7 +420,7 @@
 
       const start = (page - 1) * recordsPerPage;
       const end = start + recordsPerPage;
-      const pageData = businesses.slice(start, end);
+      const pageData = currentData.slice(start, end);
 
       if (pageData.length === 0) {
         tbody.innerHTML = `<tr><td colspan="12">No data found.</td></tr>`;
@@ -447,6 +450,7 @@
     white-space: normal;">${extras}</td>
       <td>${item["Owner"] || item["Business Management"] || ""}</td>
       <td>${item["Manager"] || item["Principal Contacts"] || ""}</td>
+      <td>${item.related_Categories || ""}</td>
       <td>${item.website || ""}</td>
       <td>${item.email || ""}</td>
       <td>${item.country || "USA"}</td>
@@ -462,58 +466,71 @@
       setupSelectAllCheckbox();
     }
 
+   
+
+
     function renderPagination() {
-      const pagination = document.getElementById("pagination");
-      pagination.innerHTML = "";
+  const pagination = document.getElementById("pagination");
+  pagination.innerHTML = "";
 
-      const totalPages = Math.ceil(businesses.length / recordsPerPage);
+  const totalPages = Math.ceil(currentData.length / recordsPerPage);
 
-      const prevLi = document.createElement("li");
-      prevLi.className = "page-item" + (currentPage === 1 ? " disabled" : "");
-      prevLi.innerHTML = `<a class="page-link" href="#" tabindex="-1"><svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 512 512"><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160zm352-160l-160 160c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L301.3 256 438.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0z" fill="#0e72ab"/></svg></a>`;
-      prevLi.onclick = (e) => {
-        e.preventDefault();
-        if (currentPage > 1) {
-          currentPage--;
-          renderTablePage(currentPage);
-        }
-      };
-      pagination.appendChild(prevLi);
 
-      let startPage = Math.max(1, currentPage - 2);
-      let endPage = Math.min(totalPages, currentPage + 2);
+  // 🔑 Hide pagination if only 1 page or no results
+  if (totalPages <= 1) {
+    pagination.style.display = "none";
+    return;
+  } else {
+    pagination.style.display = "flex"; // show when needed
+  }
 
-      if (currentPage <= 3) {
-        endPage = Math.min(5, totalPages);
-      }
-      if (currentPage > totalPages - 3) {
-        startPage = Math.max(1, totalPages - 4);
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        const li = document.createElement("li");
-        li.className = "page-item" + (i === currentPage ? " active" : "");
-        li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-        li.onclick = (e) => {
-          e.preventDefault();
-          currentPage = i;
-          renderTablePage(currentPage);
-        };
-        pagination.appendChild(li);
-      }
-      const nextLi = document.createElement("li");
-      nextLi.className =
-        "page-item" + (currentPage === totalPages ? " disabled" : "");
-      nextLi.innerHTML = `<a class="page-link" href="#"><svg xmlns="http://www.w3.org/2000/svg" height="18" width="18" viewBox="0 0 512 512"><path d="M470.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 256 265.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160zm-352 160l160-160c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L210.7 256 73.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0z" fill="#0e72ab"/></svg></a>`;
-      nextLi.onclick = (e) => {
-        e.preventDefault();
-        if (currentPage < totalPages) {
-          currentPage++;
-          renderTablePage(currentPage);
-        }
-      };
-      pagination.appendChild(nextLi);
+  const prevLi = document.createElement("li");
+  prevLi.className = "page-item" + (currentPage === 1 ? " disabled" : "");
+  prevLi.innerHTML = `<a class="page-link" href="#">Prev</a>`;
+  prevLi.onclick = (e) => {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      renderTablePage(currentPage);
     }
+  };
+  pagination.appendChild(prevLi);
+
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = Math.min(totalPages, currentPage + 2);
+
+  if (currentPage <= 3) {
+    endPage = Math.min(5, totalPages);
+  }
+  if (currentPage > totalPages - 3) {
+    startPage = Math.max(1, totalPages - 4);
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    const li = document.createElement("li");
+    li.className = "page-item" + (i === currentPage ? " active" : "");
+    li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+    li.onclick = (e) => {
+      e.preventDefault();
+      currentPage = i;
+      renderTablePage(currentPage);
+    };
+    pagination.appendChild(li);
+  }
+
+  const nextLi = document.createElement("li");
+  nextLi.className =
+    "page-item" + (currentPage === totalPages ? " disabled" : "");
+  nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
+  nextLi.onclick = (e) => {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderTablePage(currentPage);
+    }
+  };
+  pagination.appendChild(nextLi);
+}
 
     function setupSelectAllCheckbox() {
       const selectAll = document.getElementById("selectAll");
@@ -547,49 +564,53 @@
     };
     let originalBusinesses = [];
     async function loadBusinesses(search = "", near = "", country = "") {
-      const loader = document.querySelector(".loader");
-      loader.classList.remove("d-none");
-      try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/businesses?q=${search}&near=${near}&country=${country}`
-        );
+  const loader = document.querySelector(".loader");
+  loader.classList.remove("d-none");
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/businesses?q=${search}&near=${near}&country=${country}`
+    );
 
-        const response = await res.json();
+    const response = await res.json();
 
-        document.querySelector(".show-data").innerHTML = `<p>showing <b>${
-          response.results.length
-        }</b> results for<b> ${
-          selectedCategory ? selectedCategory : "all categories"
-        }`;
-        // <b> ${
-        //   selectedCategory ? selectedCategory : "all categories"
-        // }</b>  ${selectedNearVal ? `near <b>${selectedNearVal}</b> ` : ""}</p>`;
+    document.querySelector(".show-data").innerHTML = `<p>showing <b>${
+      response.results.length
+    }</b> results for<b> ${
+      selectedCategory ? selectedCategory : "all categories"
+    }</b></p>`;
 
-        window.settings = response.settings;
+    window.settings = response.settings;
+    handleScrappeButton();
 
-        handleScrappeButton();
-        businesses = response.results;
-        originalBusinesses = [...businesses];
+    businesses = response.results || [];
+    originalBusinesses = [...businesses];
+    currentData = [...businesses];
+    currentPage = 1;
 
-        if (!Array.isArray(businesses) || businesses.length === 0) {
-          document.getElementById(
-            "businessTableBody"
-          ).innerHTML = `<tr><td colspan="12">No data found.</td></tr>`;
-
-          return;
-        }
-
-        currentPage = 1;
-        renderTablePage(currentPage);
-      } catch (err) {
-        document.getElementById(
-          "businessTableBody"
-        ).innerHTML = `<tr><td colspan="12">Error loading data</td></tr>`;
-        console.error("Failed to load data:", err);
-      } finally {
-        loader.classList.add("d-none");
-      }
+    if (!Array.isArray(businesses) || businesses.length === 0) {
+      document.getElementById(
+        "businessTableBody"
+      ).innerHTML = `<tr><td colspan="12">No data found.</td></tr>`;
+      
+      // ❗ still rebuild pagination → no pages if 0
+      renderPagination();
+      return;
     }
+
+    renderTablePage(currentPage); // this will also call renderPagination()
+  } catch (err) {
+    document.getElementById(
+      "businessTableBody"
+    ).innerHTML = `<tr><td colspan="12">Error loading data</td></tr>`;
+    console.error("Failed to load data:", err);
+
+    // clear pagination on error
+    document.getElementById("pagination").innerHTML = "";
+  } finally {
+    loader.classList.add("d-none");
+  }
+}
+
     window.onload = loadBusinesses;
   </script>
   <script>
@@ -677,10 +698,14 @@
         const selectedCountry = document
           .getElementById("selectedText")
           .innerText.trim();
+
+        
+
+          selectedCategory=findValue;
         loadBusinesses(findValue, nearValue, selectedCountry);
-      if(!findValue){
-        selectedCategory="";
-      }
+        if (!findValue) {
+          selectedCategory = "";
+        }
       });
 
     function renderFilteredData(data) {
@@ -719,24 +744,199 @@
       dropdown.classList.add("active");
       filterDropdown();
     });
+   
 
-    function filterDropdown() {
-      const value = searchInput.value.toLowerCase();
-      console.log(value);
-      let visible = 0;
+async function fetchTableData(suggestion) {
+  try {
+    const params = new URLSearchParams();
 
-      categoryItems.forEach((item) => {
-        if (item.textContent.toLowerCase().includes(value)) {
-          item.style.display = "flex";
-          visible++;
-          selectedCategory = item;
-        } else {
-          item.style.display = "none";
-        }
-      });
-
-      noResults.classList.toggle("d-none", visible !== 0);
+    if (suggestion.type === "Category") {
+      params.append("category", suggestion.title);
+    } else if (suggestion.type === "Organization") {
+      params.append("organization", suggestion.title);
     }
+
+    const res = await fetch(`${API_BASE_URL}/api/getRecords?${params.toString()}`);
+    const data = await res.json();
+
+    populateTable(data);
+  } catch (err) {
+    console.error("Error fetching table data:", err);
+  }
+}
+
+function populateTable(data) {
+    const tbody = document.querySelector("#businessTableBody");
+    tbody.innerHTML = ""; // Clear existing rows
+   
+    data.forEach(item => {
+      const extras = [
+    item.phone2,
+    item.phone3,
+    item.phone4,
+    item.phone5,
+    item.phone6,
+        ]
+          .filter(Boolean)
+          .join(", ");
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td><input type="checkbox" /></td>
+            <td>${item.name || ""}</td>
+            <td>${item.category || ""}</td>
+            <td>${item.phone1  || ""}</td>
+            <td style="overflow: visible;
+    white-space: normal;">${extras}</td>
+    <td>${item["Owner"] || item["Business Management"] || ""}</td>
+      <td>${item["Manager"] || item["Principal Contacts"] || ""}</td>
+            <td>${item.related_Categories || ""}</td>
+            <td><a href="${item.website || '#'}" target="_blank">${item.website || ""}</a></td>
+            <td>${item.email || ""}</td>
+      <td>${item.country || "USA"}</td>
+      <td>${item.state}</td>
+      <td>${item.city}</td>
+      <td>${item.location}</td>
+      <td>${item.zip}</td>
+
+
+
+          
+        `;
+
+        tbody.appendChild(row);
+    });
+}
+
+
+// Store a permanent reference to your original category items
+const originalCategoryItems = Array.from(categoryItems);
+
+// Filter function
+async function filterDropdown() {
+  const value = searchInput.value.toLowerCase();
+  const country = document.getElementById("selectedText").innerText || "USA";
+  const locationInput = nearInput.value.trim();
+  const dropdownBody = document.getElementById("dropdownItems");
+  const popularHeader = document.getElementById("popularHeader");
+
+  dropdownBody.innerHTML = ""; // Clear current items
+  if (!value) {
+    if (popularHeader) popularHeader.style.display = "block";
+
+    // If input is empty, show default popular categories
+    originalCategoryItems.forEach(item => {
+      item.style.display = "flex"; // make sure visible
+      dropdownBody.appendChild(item);
+    });
+    noResults.classList.add("d-none");
+    return;
+  }
+// Hide Popular Categories when typing
+if (popularHeader) popularHeader.style.display = "none";
+  try {
+    const defaultEntityTypes = ["Category", "Organization"];
+    const params = new URLSearchParams();
+    params.append("country", country);
+    defaultEntityTypes.forEach(type => params.append("entityTypes", type));
+    params.append("input", value);
+    params.append("locationInput", locationInput);
+
+    const res = await fetch(`${API_BASE_URL}/api/suggest?${params.toString()}`);
+    const data = await res.json();
+
+    if (!data?.suggestions || data.suggestions.length === 0) {
+      noResults.classList.remove("d-none");
+      return;
+    }
+
+    noResults.classList.add("d-none");
+
+    const categories = data.suggestions.filter(s => s.type === "Category");
+    const organizations = data.suggestions.filter(s => s.type === "Organization");
+
+    function appendGroup(headerText, items) {
+      if (items.length === 0) return;
+
+      const headerDiv = document.createElement("div");
+      headerDiv.className = "dropdown-header";
+      headerDiv.innerText = headerText;
+      dropdownBody.appendChild(headerDiv);
+
+      items.forEach(suggestion => {
+        const regex = new RegExp(`(${searchInput.value.trim()})`, "gi");
+        const highlightedText = suggestion.title.replace(regex, "<strong>$1</strong>");
+
+        const div = document.createElement("div");
+        div.style.borderBottom = "1px solid #ccc";
+        div.className = "dropdown-item";
+        div.innerHTML = `<i class="bi bi-briefcase"></i> ${highlightedText}<p style="margin-bottom:0">${suggestion.secondaryTitle || ''}</p>`;
+
+        div.addEventListener("click", () => {
+          handleSuggestionClick(suggestion);
+        });
+
+        dropdownBody.appendChild(div);
+      });
+    }
+
+    appendGroup("Categories", categories);
+    appendGroup("Organizations", organizations);
+
+  } catch (error) {
+    console.error("Error fetching suggestions:", error);
+  }
+}
+
+
+async function handleSuggestionClick(suggestion) {
+ 
+  // Set input value
+  searchInput.value = suggestion.title;
+  dropdown.classList.remove("active");
+  toggleClearIcon(searchInput, "searchClearIcon");
+
+  selectedCategory= searchInput.value;
+  return;
+  currentData = originalBusinesses.filter(biz =>
+  (biz.category && biz.category.includes(suggestion.title)) ||
+  (biz.name && biz.name.includes(suggestion.title))
+);
+
+currentPage = 1;
+renderTablePage(currentPage);
+renderPagination();
+
+  try {
+    const loader = document.querySelector(".loader");
+    loader.classList.remove("d-none");
+  
+    let apiUrl = "";
+    if (suggestion.type === "Category") {
+    
+      apiUrl = `${API_BASE_URL}/api/getRecordsByCategory?category=${encodeURIComponent(suggestion.title)}`;
+    } else if (suggestion.type === "Organization") {
+      apiUrl = `${API_BASE_URL}/api/getRecordsByOrganization?organization=${encodeURIComponent(suggestion.title)}`;
+    } else {
+      console.warn("Unknown suggestion type:", suggestion.type);
+      loader.classList.add("d-none");
+      return;
+    }
+
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    // Clear table and render new data
+    populateTable(data); // or use renderTablePage if you need pagination
+
+  } catch (err) {
+    console.error("Failed to fetch records:", err);
+  } finally {
+    document.querySelector(".loader").classList.add("d-none");
+  }
+}
+
+
 
     categoryItems.forEach((item) => {
       item.addEventListener("click", () => {
@@ -798,7 +998,17 @@
         div.setAttribute("data-value", match);
         div.innerHTML = `<i class="bi bi-geo-alt-fill"></i> ${match}`;
         div.addEventListener("click", () => {
-          nearInput.value = match;
+          let parts = match.split(",").map((s) => s.trim());
+          if (parts.length === 2) {
+            // Swap if first part is state code
+            if (/^[A-Z]{2}$/.test(parts[0])) {
+              [parts[0], parts[1]] = [parts[1], parts[0]];
+            }
+            nearInput.value = parts.join(", "); // Now "Los Angeles, CA"
+          } else {
+            nearInput.value = match;
+          }
+
           selectedNearVal = nearInput.value;
           document
             .getElementById("nearDropdownMenu")
@@ -849,19 +1059,29 @@
       }
     }
     function clearInput(inputId, iconId) {
-      document.getElementById(inputId).value = "";
-      document.getElementById(iconId).classList.add("d-none");
- 
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
 
-      if (inputId === "searchInput") {
-        filterDropdown();
-        businesses = [...originalBusinesses];
-        currentPage = 1;
-        renderTablePage(currentPage);
-      } else if (inputId === "nearInput") {
-        filterNearDropdown();
-      }
-    }
+  input.value = "";
+  icon.classList.add("d-none");
+
+  if(inputId === "searchInput") {
+    const dropdownBody = document.getElementById("dropdownItems");
+    dropdownBody.innerHTML = "";   // Clear suggestions
+    noResults.classList.add("d-none");  // Hide no results
+    filterDropdown();  // Show default popular categories if needed
+  }
+
+  if(inputId === "nearInput") {
+    const nearDropdownBody = document.getElementById("nearDropdownItems");
+    nearDropdownBody.innerHTML = "";
+    nearNoResults.classList.add("d-none");
+    filterNearDropdown();  // Re-run near suggestions if needed
+  }
+
+  input.focus();
+}
+
 
     let scrapeBtn = document.querySelector("#start-scraping");
     if (scrapeBtn) {
