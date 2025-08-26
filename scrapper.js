@@ -25,15 +25,21 @@ const { insertData, testConnection, getAllData,shouldRunScrapper,resetScrapperFl
 //testConnection();
 
 const CATEGORIES = [
- "Roofing Contractors",
-  "Real Estate Consultant",
-  "General Contractor",
-  "Used Car Dealers",
-  "Heating Contractors",
-  "Air Conditioning Contractors",
-  "Auto Repairs",
-  "Financial Services",
-  "Tree Services",
+  "Web Design",
+  "digital marketing agency",
+  "Internet Marketing Services",
+  "Digital Marketing",
+  "SEO Services",
+  "Graphic Designer",
+  "Social Media Marketing",
+  "Data Systems Consultants",
+  "Email Marketing",
+  "Automation Consultants",
+  "Marketing Consultant",
+  "Web Hosting",
+  "Search Engine Marketing",
+  "Brand Development",
+  "Information Technology Services",
 ];
 const COUNTRIES = ["USA", "CAN"];
 const FILE_FOR = (c) => `${c}.json`;
@@ -184,27 +190,6 @@ async function scrapeCategory(listPage, cat, country, detailPage) {
       row.country = country;
     });
     
-
-    // for (const [i, row] of rows.entries()) {
-    //   if (!row.link) {
-    //     console.warn(`⚠️ Skipping row ${i} — no link`);
-    //     continue;
-    //   }
-
-    //   console.debug(`🔗 Scraping detail page (${i + 1}/${rows.length}): ${row.link}`);
-
-    //   try {
-    //     const extra = await scrapeBusinessDetails(detailPage, row.link);
-    //     Object.assign(row, extra);
-    //     row.category = cat;
-    //     row.country = country;
-    //   } catch (err) {
-    //     console.error(`❌ Error scraping detail page: ${row.link}`, err);
-    //   }
-
-    //   await delay(800);
-    //  }
-
     all.push(...rows);
     await insertData(rows);
     console.log(`✅ Page ${pageNo} processed and inserted.`);
